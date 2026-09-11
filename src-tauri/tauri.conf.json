@@ -1,0 +1,33 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "Plainmark",
+  "version": "0.1.0",
+  "identifier": "io.github.gopalasubramanium.plainmark",
+  "build": {
+    "beforeDevCommand": "pnpm dev",
+    "devUrl": "http://127.0.0.1:1420",
+    "beforeBuildCommand": "pnpm prepare:bundle",
+    "frontendDist": "../dist"
+  },
+  "app": {
+    "windows": [{
+      "label": "main", "title": "Plainmark", "width": 1320, "height": 860,
+      "minWidth": 720, "minHeight": 520, "center": true, "backgroundColor": "#f7f6f2",
+      "dragDropEnabled": false
+    }],
+    "security": {
+      "csp": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src ipc: http://ipc.localhost; font-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'"
+    }
+  },
+  "bundle": {
+    "active": true, "targets": "all", "category": "Productivity",
+    "shortDescription": "A little space for your words.",
+    "longDescription": "Free, open-source Markdown viewing and editing. Local files, live preview, no ads, no tracking, no accounts.",
+    "copyright": "Copyright 2026 Plainmark contributors",
+    "license": "GPL-3.0-or-later",
+    "resources": ["resources/LICENSE.txt", "resources/THIRD_PARTY_NOTICES.txt"],
+    "icon": ["icons/32x32.png", "icons/128x128.png", "icons/128x128@2x.png", "icons/icon.icns", "icons/icon.ico"],
+    "macOS": { "minimumSystemVersion": "11.0", "signingIdentity": "-" },
+    "windows": { "nsis": { "displayLanguageSelector": false } }
+  }
+}

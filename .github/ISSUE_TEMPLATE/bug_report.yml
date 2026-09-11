@@ -1,0 +1,22 @@
+name: Bug report
+description: Something isn't working as expected
+body:
+  - type: input
+    id: system
+    attributes:
+      label: System and Plainmark version
+      placeholder: e.g. Windows 11 x64, Plainmark 0.1.0
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: What happened?
+      description: Include steps, expected behavior, and actual behavior. Remove private information.
+    validations:
+      required: true
+  - type: textarea
+    id: sample
+    attributes:
+      label: Minimal Markdown example (optional)
+      render: markdown
