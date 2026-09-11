@@ -7,7 +7,7 @@
 
 ## Get Plainmark
 
-**[Download the latest preview release](https://github.com/gopalasubramanium/plainmark/releases)** · [Report a bug](https://github.com/gopalasubramanium/plainmark/issues) · [Contribute](CONTRIBUTING.md)
+**[Visit the Plainmark website](https://markdown.eksaar.com)** · [Download the latest preview release](https://github.com/gopalasubramanium/plainmark/releases) · [Report a bug](https://github.com/gopalasubramanium/plainmark/issues) · [Contribute](CONTRIBUTING.md)
 
 Plainmark is at **0.1.0**, an early preview. Choose the installer for your computer:
 
