@@ -2,7 +2,7 @@
 
 Plainmark should earn adoption by making ordinary documents dependable: open a file without setup, edit without losing its meaning, find related notes, include pictures, and share a readable result. Everyday writing and technical documentation deserve equal priority. A pleasant visual editor helps both groups, but reliable saves, predictable Markdown, private defaults and straightforward installation matter more than a long feature list.
 
-This assessment covers public evidence available on 12 September 2026 and the Plainmark 0.3 development changes (0.3.2 release candidate). It identifies recurring failure classes and explains the resulting product decisions. It does not claim to measure the percentage of Markdown users affected or establish a statistically representative ranking. Public issue trackers overrepresent problems, forum threads can include promotion, and developers are more visible in these sources than occasional document users. Historical and closed issues are used as regression examples, not evidence that a competing product remains broken today.
+This assessment covers public evidence available on 12 September 2026 and the Plainmark 0.3 development changes (0.3.3 release candidate). It identifies recurring failure classes and explains the resulting product decisions. It does not claim to measure the percentage of Markdown users affected or establish a statistically representative ranking. Public issue trackers overrepresent problems, forum threads can include promotion, and developers are more visible in these sources than occasional document users. Historical and closed issues are used as regression examples, not evidence that a competing product remains broken today.
 
 ## Evidence and priorities
 

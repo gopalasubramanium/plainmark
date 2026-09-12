@@ -1,6 +1,6 @@
 [package]
 name = "plainmark"
-version = "0.3.2"
+version = "0.3.3"
 description = "A quiet, free Markdown editor"
 authors = ["Gopala Subramanium", "Plainmark contributors"]
 license = "GPL-3.0-or-later"

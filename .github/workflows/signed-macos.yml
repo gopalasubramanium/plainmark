@@ -3,7 +3,7 @@ on:
   workflow_dispatch:
     inputs:
       tag:
-        description: Unpublished release tag to sign (for example v0.3.2)
+        description: Unpublished release tag to sign (for example v0.3.3)
         required: true
         type: string
 permissions:

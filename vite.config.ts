@@ -1,6 +1,9 @@
 import { defineConfig } from 'vitest/config';
 import type { Connect } from 'vite';
 import { randomUUID } from 'node:crypto';
+import { readFileSync } from 'node:fs';
+
+const appVersion = JSON.parse(readFileSync(new URL('./package.json', import.meta.url), 'utf8')).version as string;
 
 // Development/preview only. Desktop builds use a Rust protocol, never an HTTP server.
 function htmlPreview(middlewares: Connect.Server) {
@@ -23,6 +26,7 @@ function htmlPreview(middlewares: Connect.Server) {
 }
 
 export default defineConfig({
+  define: { 'import.meta.env.VITE_APP_VERSION': JSON.stringify(appVersion) },
   clearScreen: false,
   plugins: [{name:'plainmark-html-preview', configureServer: server => htmlPreview(server.middlewares), configurePreviewServer: server => htmlPreview(server.middlewares)}],
   server: { port: 1420, strictPort: true },
