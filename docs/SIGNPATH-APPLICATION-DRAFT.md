@@ -1,6 +1,6 @@
 # SignPath Foundation application draft
 
-**Status: prepared for maintainer review; not submitted, approved or sponsored.**
+**Status: maintainer authorized submission on 12 September 2026; application completion is in progress. Not approved or sponsored.**
 
 Project: Plainmark  
 Repository: https://github.com/gopalasubramanium/plainmark  

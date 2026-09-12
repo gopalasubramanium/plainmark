@@ -156,7 +156,7 @@ Final verification also caught parallel builders creating two draft entries for 
 
 The [completed signing run](https://github.com/gopalasubramanium/plainmark/actions/runs/34689043975) subsequently replaced only the unpublished Mac assets. Both apps and both DMGs now pass Developer ID verification, Apple notarization, stapled-ticket validation and Gatekeeper assessment. A local download check also mounted each DMG read-only and verified its app against the matching archive. Final checksums and all eleven artifact attestations were verified: the six Mac files match signing workflow commit `0329ff6f2168c1c8673e85b4701a9612a02724ed` on `main` and signing run `34689043975`; the unchanged Windows/Linux files match the original version-tag build. The workflow checks out the exact v0.3.3 application tag. Initial verification caught a real gap where apps were notarized but outer DMGs were not; separate DMG submission and fail-closed download-trust checks fixed it. The [workflow correction checks](https://github.com/gopalasubramanium/plainmark/actions/runs/34689035277) passed across all platforms.
 
-The release remains a draft because Windows publisher signing is still pending. Mac trust verification does not establish Windows signing, independent security certification, or complete installation testing across platforms.
+The release was subsequently published as a preview on 12 September 2026, with the verified Mac downloads and an explicit unsigned Windows notice. Windows publisher signing is still pending. Mac trust verification does not establish Windows signing, independent security certification, or complete installation testing across platforms.
 
 | Area | Concrete verification | Remaining practical limit |
 | --- | --- | --- |
@@ -166,7 +166,7 @@ The release remains a draft because Windows publisher signing is still pending. 
 | Search | Nested filename/path matching, keyboard selection and explicit bounds | No full-text index or exhaustive large-vault guarantee |
 | Rendering and sharing | Local Mermaid/math/SVG; inert hostile content; static print content without credits | Native printing, IME and assistive technologies need platform checks |
 | Supply chain | Dependency audits, exact GLib backport comparison, pinned build actions | Maintenance warnings remain; verified provenance does not replace publisher signatures |
-| Signing | Fail-closed Mac workflow and Windows signature-verification preparation | Account/provider-dependent; current public previews are not publisher-trusted |
+| Signing | Fail-closed Mac workflow and Windows signature-verification preparation | Mac v0.3.3 verified; Windows still requires provider approval and signed release verification |
 
 Repository private vulnerability reporting and secret push protection were already enabled when inspected. Additional dependency-alert, automatic-fix and weekly-scan settings require explicit maintainer approval; prepared configuration must not be represented as active before that approval and verification. A successful security pipeline should block a release on new known vulnerabilities while keeping maintenance warnings visible for review.
 

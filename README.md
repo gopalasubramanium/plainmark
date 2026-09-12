@@ -9,7 +9,7 @@
 
 **[Visit the Plainmark website](https://markdown.eksaar.com)** · [Download the latest preview release](https://github.com/gopalasubramanium/plainmark/releases) · [Report a bug](https://github.com/gopalasubramanium/plainmark/issues) · [Contribute](CONTRIBUTING.md)
 
-The current source is **0.3.3**, an early preview. See GitHub Releases for the latest published binaries. Choose the installer for your computer:
+The current release is **[v0.3.3](https://github.com/gopalasubramanium/plainmark/releases/tag/v0.3.3)**, a preview. Choose the installer for your computer:
 
 | Platform | Download | Target |
 | --- | --- | --- |
@@ -20,7 +20,7 @@ The current source is **0.3.3**, an early preview. See GitHub Releases for the l
 
 Windows uses WebView2, and Linux requires WebKitGTK 4.1. AppImage compatibility depends on the host distribution and its system libraries. See [Tauri’s platform prerequisites](https://v2.tauri.app/start/prerequisites/).
 
-The published **v0.2.2** preview has ad-hoc Mac signatures and an unsigned Windows installer. The **v0.3.3 draft** now has Developer ID-signed, Apple-notarized Mac apps and DMGs for both architectures; Windows signing remains pending. Check [platform signing status](docs/SIGNING.md) for the exact release before downloading. You can also build directly from source below.
+**v0.3.3** has Developer ID-signed, Apple-notarized Mac apps and DMGs for both architectures. The Windows installer is still unsigned; trusted Windows signing is pending. Check the [Code signing policy](docs/SIGNING.md) for the exact release before downloading. You can also build directly from source below.
 
 ## Your words, without the noise
 

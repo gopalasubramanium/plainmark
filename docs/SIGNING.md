@@ -1,6 +1,6 @@
-# Trusted distribution
+# Code signing policy
 
-The **v0.3.3 draft Mac apps and DMGs are Developer ID-signed, Apple-notarized, and verified by Gatekeeper** for Apple Silicon and Intel. Windows remains unsigned and the release remains a draft. The older published v0.2.2 preview still has ad-hoc Mac signatures and an unsigned Windows installer. Build provenance and checksums serve a different purpose from OS publisher signatures; describe the status of the exact downloaded asset.
+The **v0.3.3 Mac apps and DMGs are Developer ID-signed, Apple-notarized, and verified by Gatekeeper** for Apple Silicon and Intel. The release is published as a preview; its Windows installer remains unsigned. The older published v0.2.2 preview still has ad-hoc Mac signatures and an unsigned Windows installer. Build provenance and checksums serve a different purpose from OS publisher signatures; describe the status of the exact downloaded asset.
 
 ## macOS
 
@@ -12,9 +12,15 @@ Use a **Developer ID Application** certificate for distribution outside the Mac 
 
 First complete the ordinary all-platform release checks for a new, unpublished version tag. Then dispatch the signed workflow with that exact tag. Verify both architectures and fresh-download installation before publishing the draft. Never silently replace binaries in an already public release: use a new version. [Apple Developer ID](https://developer.apple.com/developer-id/) and [Tauri's signing and notarization guidance](https://v2.tauri.app/distribute/sign/macos/) describe the platform requirements.
 
+## Signing roles and privacy
+
+Gopala Subramanium ([gopalasubramanium](https://github.com/gopalasubramanium)) is the maintainer, author, reviewer and release approver. Changes from outside contributors require maintainer review. Production signing requires maintainer approval; automated checks do not grant signing approval. SignPath onboarding must verify MFA on repository and signing accounts before production use.
+
+Plainmark does not transfer document contents to networked systems. External links open only when requested; installation may download Microsoft WebView2 if it is missing. See the [privacy policy](../PRIVACY.md) for local recovery storage, optional actions and system components.
+
 ## Windows
 
-No signing account or certificate has been established. The recommended first application is [SignPath Foundation](https://signpath.org/), which supports eligible open-source projects without charging the project for signing. Approval, policy compliance, artifact configuration and access setup are required; free service is not automatic. A draft application is included in `SIGNPATH-APPLICATION-DRAFT.md`; it has not been sent.
+No signing account or certificate has been established. The recommended first application is [SignPath Foundation](https://signpath.org/), which supports eligible open-source projects without charging the project for signing. Approval, policy compliance, artifact configuration and access setup are required; free service is not automatic. See [the application record](SIGNPATH-APPLICATION-DRAFT.md) for onboarding status. Sponsorship and signing are not active until the provider approves and verifies the project.
 
 After approval, configure the official SignPath integration so it signs the application executable inside the installer and the outer NSIS installer, preserving the artifact structure and provenance. Authorize production signing only for reviewed version tags and require the maintainer to approve signing requests. Download the returned signed artifact, verify its contents, then run `scripts/verify-windows-signature.ps1` with the actual approved publisher subject. This script fails unless the outer installer has a valid Authenticode signature, matching publisher and timestamp; verify the installed executable too. The provider configuration cannot be completed until SignPath supplies the project/artifact/policy identifiers. Do not claim Foundation sponsorship or add its required sponsorship credit before acceptance.
 
