@@ -110,7 +110,8 @@ public static class PlainmarkTestWindow {
         $source.SetFocus()
         $updated = $original + "`nSaved from the installed editor.`n"
         Set-Clipboard -Value $updated
-        [Windows.Forms.SendKeys]::SendWait('^a^v')
+        [Windows.Forms.SendKeys]::SendWait('^a')
+        [Windows.Forms.SendKeys]::SendWait('^v')
         Start-Sleep -Milliseconds 500
         [Windows.Forms.SendKeys]::SendWait('^s')
         $limit = (Get-Date).AddSeconds(15)
