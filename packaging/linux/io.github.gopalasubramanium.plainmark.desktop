@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+Name=Plainmark
+Comment=Read and edit local Markdown documents
+Exec=plainmark %F
+Icon=io.github.gopalasubramanium.plainmark
+Terminal=false
+Categories=Office;TextEditor;
+MimeType=text/markdown;
+StartupWMClass=plainmark
+Keywords=Markdown;Mermaid;Notes;

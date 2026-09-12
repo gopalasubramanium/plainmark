@@ -1,6 +1,6 @@
 # Store distribution readiness
 
-Assessed 12 September 2026 against Plainmark v0.3.3 and the current repository. No store listing has been created or submitted. Official editions should remain free, with no ads, paid features, accounts in the app, or telemetry. GitHub downloads remain a useful independent distribution channel.
+Assessed 12 September 2026 against Plainmark v0.3.3 and the current repository. No store listing has been created or submitted. Enrollment has been started; see the separate [distribution status](DISTRIBUTION-STATUS.md) for exact account gates and the published Homebrew channel. Official editions should remain free, with no ads, paid features, accounts in the app, or telemetry. GitHub downloads remain a useful independent distribution channel.
 
 ## Microsoft Store: first priority
 

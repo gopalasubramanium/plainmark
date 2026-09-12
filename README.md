@@ -22,6 +22,14 @@ Windows uses WebView2, and Linux requires WebKitGTK 4.1. AppImage compatibility 
 
 **v0.3.3** has Developer ID-signed, Apple-notarized Mac apps and DMGs for both architectures. The Windows installer is still unsigned; trusted Windows signing is pending. Check the [Code signing policy](docs/SIGNING.md) for the exact release before downloading. You can also build directly from source below.
 
+Mac users can also install through the [official publisher-maintained Homebrew tap](https://github.com/gopalasubramanium/homebrew-plainmark):
+
+```sh
+brew install --cask gopalasubramanium/plainmark/plainmark@preview
+```
+
+This uses the same signed and notarized preview downloads, with a checksum for each architecture. App Store distribution is being prepared; see [distribution status](docs/DISTRIBUTION-STATUS.md).
+
 ## Your words, without the noise
 
 - **Visual, Source, Split, Read.** Edit the formatted document directly, work with Markdown, or settle into a reading view.

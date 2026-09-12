@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>io.github.gopalasubramanium.plainmark</id>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>GPL-3.0-or-later</project_license>
+  <name>Plainmark</name>
+  <summary>Read and edit local Markdown documents</summary>
+  <developer id="io.github.gopalasubramanium">
+    <name>Gopala Subramanium</name>
+  </developer>
+  <description>
+    <p>Plainmark is a free Markdown viewer and visual editor for notes, documents and technical writing. Your files stay on your computer, with no accounts, ads, subscriptions or telemetry.</p>
+    <ul>
+      <li>Edit formatted documents or Markdown source with a synchronized preview</li>
+      <li>Organize local files in folder workspaces and tabs</li>
+      <li>Render Mermaid diagrams, math and local images</li>
+      <li>Find documents, follow local note links, and print or save a PDF</li>
+    </ul>
+    <p>The current release is a preview. Unsaved recovery copies are stored locally without encryption and can be disabled or cleared in Privacy settings.</p>
+  </description>
+  <launchable type="desktop-id">io.github.gopalasubramanium.plainmark.desktop</launchable>
+  <url type="homepage">https://markdown.eksaar.com/</url>
+  <url type="bugtracker">https://github.com/gopalasubramanium/plainmark/issues</url>
+  <url type="vcs-browser">https://github.com/gopalasubramanium/plainmark</url>
+  <url type="help">https://github.com/gopalasubramanium/plainmark/blob/main/README.md</url>
+  <url type="contribute">https://github.com/gopalasubramanium/plainmark/blob/main/CONTRIBUTING.md</url>
+  <url type="contact">https://github.com/gopalasubramanium/plainmark/issues</url>
+  <categories>
+    <category>Office</category>
+    <category>TextEditor</category>
+  </categories>
+  <keywords>
+    <keyword>Markdown</keyword>
+    <keyword>Mermaid</keyword>
+    <keyword>Notes</keyword>
+  </keywords>
+  <provides>
+    <binary>plainmark</binary>
+    <mediatype>text/markdown</mediatype>
+  </provides>
+  <screenshots>
+    <screenshot type="default">
+      <caption>Write and read a local Markdown document</caption>
+      <image>https://markdown.eksaar.com/assets/screenshot.png</image>
+    </screenshot>
+  </screenshots>
+  <releases>
+    <release version="0.3.3" date="2026-09-12" type="development">
+      <url>https://github.com/gopalasubramanium/plainmark/releases/tag/v0.3.3</url>
+    </release>
+  </releases>
+</component>
