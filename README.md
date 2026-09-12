@@ -20,7 +20,7 @@ The current source is **0.3.3**, an early preview. See GitHub Releases for the l
 
 Windows uses WebView2, and Linux requires WebKitGTK 4.1. AppImage compatibility depends on the host distribution and its system libraries. See [Tauri’s platform prerequisites](https://v2.tauri.app/start/prerequisites/).
 
-The preview installers are **not publisher-signed/notarized**. macOS uses ad-hoc signing. Windows and macOS may show security prompts for downloaded builds; trusted publisher signing is a future release task. You can also build directly from the source below.
+The published **v0.2.2** preview has ad-hoc Mac signatures and an unsigned Windows installer. The **v0.3.3 draft** now has Developer ID-signed, Apple-notarized Mac apps and DMGs for both architectures; Windows signing remains pending. Check [platform signing status](docs/SIGNING.md) for the exact release before downloading. You can also build directly from source below.
 
 ## Your words, without the noise
 
