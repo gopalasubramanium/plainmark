@@ -672,3 +672,24 @@ may consider it more useful to permit linking proprietary applications with
 the library.  If this is what you want to do, use the GNU Lesser General
 Public License instead of this License.  But first, please read
 <https://www.gnu.org/licenses/why-not-lgpl.html>.
+
+
+Plainmark — additional permission for Apple App Store distribution
+
+Copyright 2026 Gopala Subramanium.
+Granted by Gopala Subramanium for his original Plainmark code on 13 September 2026.
+The GNU General Public License, version 3 or later, remains in LICENSE.
+
+As an additional permission under section 7 of the GNU General Public License,
+version 3, the copyright holders granting this permission allow executable
+copies of their Plainmark code to be conveyed through Apple's App Store under
+Apple's mandatory distribution and usage terms, including where those terms
+would otherwise conflict with the GPL. Corresponding source must remain
+available under GPL-3.0-or-later. This permission applies only to code whose
+copyright holders grant it and does not alter the licenses of third-party
+components.
+
+This permission does not apply to vendored code or upstream dependencies unless
+their rightsholders separately grant it. It does not license the user's documents.
+Other contributors may grant this same permission for their own contributions;
+their participation does not transfer copyright to the project maintainer.

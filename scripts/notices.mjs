@@ -46,6 +46,6 @@ for (const pkg of metadata.packages) {
   records.set(key, `${key}\nLicense: ${pkg.license ?? 'See upstream license file'}\nSource: https://crates.io/crates/${pkg.name}/${pkg.version}\n${texts.join('\n\n')}`);
 }
 mkdirSync('src-tauri/resources', { recursive: true });
-writeFileSync('src-tauri/resources/LICENSE.txt', readFileSync('LICENSE'));
-writeFileSync('src-tauri/resources/THIRD_PARTY_NOTICES.txt', 'PLAINMARK THIRD-PARTY NOTICES\n\nUpstream dependencies retain their licenses. This inventory includes build-time and platform-specific crates as well as bundled frontend libraries. A dependency listed here is not necessarily linked into every platform binary. Exact source versions are recorded in Cargo.lock and pnpm-lock.yaml.\n\n' + [...records].sort(([a], [b]) => a.localeCompare(b, 'en')).map(([, text]) => text).join('\n\n' + '='.repeat(78) + '\n\n'));
+writeFileSync('src-tauri/resources/LICENSE.txt', readFileSync('LICENSE', 'utf8') + '\n\n' + readFileSync('LICENSE-APPLE-STORE-EXCEPTION.txt', 'utf8'));
+writeFileSync('src-tauri/resources/THIRD_PARTY_NOTICES.txt', 'PLAINMARK THIRD-PARTY NOTICES\n\nUpstream dependencies retain their licenses. This inventory includes build-time and platform-specific crates as well as bundled frontend libraries. A dependency listed here is not necessarily linked into every platform binary. Exact source versions are recorded in Cargo.lock and pnpm-lock.yaml.\n\n' + readFileSync('docs/APPLE-STORE-LICENSES.md', 'utf8') + '\n\n' + [...records].sort(([a], [b]) => a.localeCompare(b, 'en')).map(([, text]) => text).join('\n\n' + '='.repeat(78) + '\n\n'));
 console.log(`Included license notices for ${records.size} dependencies.`);

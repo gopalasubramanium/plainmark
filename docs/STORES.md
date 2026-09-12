@@ -20,7 +20,7 @@ The repository now has App Sandbox entitlements and a separate App Store build c
 
 Document and assess the existing Run HTML feature against Apple's executable-code rules. Do not silently remove it or promise review acceptance. Apple requires sandboxing and applies its own review rules to the submitted product. [App Review Guidelines, 2.4.5 and 2.5.2](https://developer.apple.com/app-store/review/guidelines/).
 
-Review license compatibility before submission. Plainmark is GPL-3.0-or-later; its notices also identify EPL/GPL alternatives for ELK and other third-party licenses. The FSF has documented conflicts between historical App Store restrictions and GPL distribution. That history is a reason to check the current agreement and exact dependency licenses, not a determination that every current Mac submission is prohibited. Any relicensing or additional permission must respect all relevant rightsholders; changing the top-level license alone is insufficient. [FSF's historical explanation](https://www.fsf.org/blogs/licensing/more-about-the-app-store-gpl-enforcement).
+The publisher approved a narrow Apple Store permission for his own code on 13 September 2026. The source remains GPL-3.0-or-later. The exception, explicit dependency license choices and preferred-source references are included in the bundled notices. See [the license record](APPLE-STORE-LICENSES.md). Third-party components retain their own rights; Apple's standard executable EULA does not replace their source licenses.
 
 ## Flathub: primary Linux store target
 

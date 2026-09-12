@@ -16,6 +16,6 @@ For a larger feature, open an issue first so its scope can be discussed. Small b
 
 Tests should protect real behavior or a known failure, not repeat implementation details. Use semantic HTML and labeled controls, retain keyboard access, and respect reduced-motion preferences. No CDN fonts, analytics SDKs, network-loaded editor code, or hidden filesystem access.
 
-Contributions are provided under GPL-3.0-or-later, consistent with the project license. Please submit work you have the right to contribute. There is no copyright assignment requirement.
+Contributions are provided under GPL-3.0-or-later with the additional permission in [LICENSE-APPLE-STORE-EXCEPTION.txt](LICENSE-APPLE-STORE-EXCEPTION.txt), consistent with the project license. By contributing your own code, you grant that same permission for your contribution. Please submit work you have the right to contribute and identify any third-party code and its license. There is no copyright assignment requirement.
 
 Be kind, specific, and constructive. Critique the work, not the person.

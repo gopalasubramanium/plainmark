@@ -58,7 +58,7 @@ Created by **[Gopala Subramanium](https://me.sgopala.com)**. I made Plainmark be
 
 The official Plainmark project is committed to being free of charge, without ads, telemetry, subscriptions, bundled offers, or premium tiers. There is no server, account system, update service, or runtime dependency on a CDN.
 
-The code is licensed under **GPL-3.0-or-later**. You can use, study, change, and share it. Distributed derivatives must comply with the GPL’s source-sharing requirements. The license permits commercial redistribution; our free-of-charge commitment applies to official Plainmark releases. Your own documents are yours and are not covered by the app’s license. See [LICENSE](LICENSE), [the project principles](PRINCIPLES.md), and [the GNU GPL FAQ](https://www.gnu.org/licenses/gpl-faq.html#DoesTheGPLAllowMoney).
+The code is licensed under **GPL-3.0-or-later**. You can use, study, change, and share it. Distributed derivatives must comply with the GPL’s source-sharing requirements. The license permits commercial redistribution; our free-of-charge commitment applies to official Plainmark releases. Your own documents are yours and are not covered by the app’s license. See [LICENSE](LICENSE), [the project principles](PRINCIPLES.md), and [the GNU GPL FAQ](https://www.gnu.org/licenses/gpl-faq.html#DoesTheGPLAllowMoney). The maintainer grants a narrow [Apple Store distribution permission](LICENSE-APPLE-STORE-EXCEPTION.txt) for his own code. Source stays GPL-3.0-or-later; [third-party licenses and source rights](docs/APPLE-STORE-LICENSES.md) remain separate.
 
 ## Privacy and safety
 
