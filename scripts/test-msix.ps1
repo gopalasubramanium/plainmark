@@ -74,7 +74,7 @@ public static class PlainmarkTestWindow {
                 $node = $window.FindFirst([Windows.Automation.TreeScope]::Descendants, $condition)
                 if ($node) { return $node }
                 $all = $window.FindAll([Windows.Automation.TreeScope]::Descendants, [Windows.Automation.Condition]::TrueCondition)
-                $node = @($all | Where-Object { $_.Current.Name.StartsWith($name, [StringComparison]::Ordinal) }) | Select-Object -First 1
+                $node = @($all | Where-Object { ([string]$_.Current.Name).StartsWith($name, [StringComparison]::Ordinal) }) | Select-Object -First 1
                 if ($node) { return $node }
                 Start-Sleep -Milliseconds 250
             } while ((Get-Date) -lt $limit)
