@@ -28,6 +28,9 @@ jobs:
       - name: Validate and package the registered Store identity
         shell: pwsh
         run: ./scripts/build-msix.ps1 -OutputDirectory store-package
+      - name: Test package installation, editor launch and uninstall
+        shell: pwsh
+        run: ./scripts/test-msix.ps1 -PackagePath (Get-ChildItem store-package/*.msix | Select-Object -ExpandProperty FullName)
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: Plainmark-Microsoft-Store-package
