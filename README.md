@@ -9,7 +9,7 @@
 
 **[Visit the Plainmark website](https://markdown.eksaar.com)** · [Download the latest preview release](https://github.com/gopalasubramanium/plainmark/releases) · [Report a bug](https://github.com/gopalasubramanium/plainmark/issues) · [Contribute](CONTRIBUTING.md)
 
-The current source is **0.3.1**, an early preview. See GitHub Releases for the latest published binaries. Choose the installer for your computer:
+The current source is **0.3.2**, an early preview. See GitHub Releases for the latest published binaries. Choose the installer for your computer:
 
 | Platform | Download | Target |
 | --- | --- | --- |

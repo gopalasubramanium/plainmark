@@ -3,18 +3,33 @@ import hashlib
 import json
 import os
 from pathlib import Path
+import re
 import sys
 
 root = Path(sys.argv[1])
 target = sys.argv[2]
-if not all(c.isalnum() or c == '-' for c in target):
-    raise ValueError('Invalid target name')
 version = json.loads(Path('package.json').read_text())['version']
-files = sorted(p for p in root.rglob('*') if p.is_file() and ((f'_{version}_' in p.name and p.suffix.lower() in {'.dmg', '.exe', '.deb', '.appimage'}) or p.name.endswith('.app.tar.gz')))
-if not files:
-    raise ValueError('No installers found; refusing an empty checksum list')
-if len({p.name for p in files}) != len(files):
-    raise ValueError('Ambiguous installer names')
+if not re.fullmatch(r'[0-9]+\.[0-9]+\.[0-9]+(?:-[0-9A-Za-z.-]+)?', version):
+    raise ValueError('Invalid release version')
+# Match the actual upload names used by tauri-action, including its renaming
+# of Plainmark.app.tar.gz. Do not pick up older bundles from a restored cache.
+if target in {'aarch64-apple-darwin', 'x86_64-apple-darwin'}:
+    arch = 'aarch64' if target == 'aarch64-apple-darwin' else 'x64'
+    name = f'Plainmark_{version}_{arch}'
+    artifacts = [(root / 'dmg' / f'{name}.dmg', f'{name}.dmg'),
+                 (root / 'macos' / 'Plainmark.app.tar.gz', f'{name}.app.tar.gz')]
+elif target == 'x86_64-pc-windows-msvc':
+    name = f'Plainmark_{version}_x64-setup.exe'
+    artifacts = [(root / 'nsis' / name, name)]
+elif target == 'x86_64-unknown-linux-gnu':
+    name = f'Plainmark_{version}_amd64'
+    artifacts = [(root / 'appimage' / f'{name}.AppImage', f'{name}.AppImage'),
+                 (root / 'deb' / f'{name}.deb', f'{name}.deb')]
+else:
+    raise ValueError('Unsupported release target')
+for path, _ in artifacts:
+    if not path.is_file():
+        raise ValueError(f'Missing release artifact: {path}')
 checksum = Path(f'SHA256SUMS-{target}.txt')
 def digest(path):
     result = hashlib.sha256()
@@ -22,10 +37,10 @@ def digest(path):
         for chunk in iter(lambda: handle.read(1024 * 1024), b''):
             result.update(chunk)
     return result.hexdigest()
-checksum.write_text(''.join(f'{digest(p)}  {p.name}\n' for p in files))
+checksum.write_text(''.join(f'{digest(path)}  {name}\n' for path, name in artifacts))
 output = os.environ.get('GITHUB_OUTPUT')
 if output:
     with open(output, 'a') as handle:
-        handle.write('artifacts<<PLAINMARK_PATHS\n' + '\n'.join(str(p.resolve()) for p in [*files, checksum]) + '\nPLAINMARK_PATHS\n')
+        handle.write('artifacts<<PLAINMARK_PATHS\n' + '\n'.join(str(p.resolve()) for p in [*(path for path, _ in artifacts), checksum]) + '\nPLAINMARK_PATHS\n')
         handle.write(f'checksum={checksum}\n')
-print(f'Created checksums for {len(files)} installers.')
+print(f'Created checksums for {len(artifacts)} release artifacts.')
