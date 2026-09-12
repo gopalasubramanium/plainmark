@@ -1,0 +1,75 @@
+#!/usr/bin/env python3
+"""Exercise a real installed Flatpak on an isolated CI desktop, without extra grants."""
+import os
+from pathlib import Path
+import subprocess
+import tempfile
+import time
+
+if os.environ.get("GITHUB_ACTIONS") != "true" or os.environ.get("RUNNER_ENVIRONMENT") != "github-hosted":
+    raise SystemExit("This desktop test is restricted to an ephemeral GitHub-hosted runner.")
+
+import gi
+gi.require_version("Gdk", "3.0")
+from gi.repository import Gdk
+import pyatspi
+
+APP = "io.github.gopalasubramanium.plainmark"
+
+
+def snapshot():
+    result = []
+    remaining = 6000
+    def visit(node, depth=0):
+        nonlocal remaining
+        if node is None or remaining <= 0 or depth > 24:
+            return
+        remaining -= 1
+        try:
+            result.append(f"{'  ' * depth}{node.getRoleName()}: {node.name}")
+            try:
+                text = node.queryText()
+                result.append(text.getText(0, min(text.characterCount, 12000)))
+            except (NotImplementedError, AttributeError):
+                pass
+            for child in node:
+                visit(child, depth + 1)
+        except Exception as error:
+            result.append(f"Accessibility read: {type(error).__name__}")
+    visit(pyatspi.Registry.getDesktop(0))
+    return "\n".join(result)
+
+
+with tempfile.TemporaryDirectory(prefix="plainmark-portal-test-") as directory:
+    document = Path(directory) / "portal-note.md"
+    marker = "A document opened through the file portal"
+    document.write_text(f"# Plainmark on Linux\n\n{marker}.\n\n- Local Markdown\n- No account required\n", encoding="utf-8")
+    # Flatpak forwards only this selected file through the document portal.
+    with open("flatpak-runtime.log", "w") as log:
+        process = subprocess.Popen(["flatpak", "run", "--file-forwarding", APP, "@@", str(document), "@@"], stdout=log, stderr=subprocess.STDOUT)
+        try:
+            deadline = time.monotonic() + 70
+            while time.monotonic() < deadline:
+                state = snapshot()
+                Path("flatpak-accessibility.txt").write_text(state, encoding="utf-8")
+                if marker in state and "portal-note.md" in state and "Open a file" in state:
+                    print("PASS: Installed Flatpak rendered the editor and read the portal-granted Markdown document.")
+                    break
+                if process.poll() is not None:
+                    raise RuntimeError(f"Flatpak exited with status {process.returncode}; see runtime log.")
+                time.sleep(1)
+            else:
+                raise RuntimeError("The editor and portal document were not accessible within 70 seconds.")
+        finally:
+            root = Gdk.get_default_root_window()
+            if root:
+                picture = Gdk.pixbuf_get_from_window(root, 0, 0, root.get_width(), root.get_height())
+                if picture:
+                    picture.savev("flatpak-desktop.png", "png", [], [])
+            subprocess.run(["flatpak", "kill", APP], check=False)
+            try:
+                process.wait(timeout=10)
+            except subprocess.TimeoutExpired:
+                process.kill()
+                process.wait()
+print("Folder pickers, editing/saving, attachments, printing, upgrades and assistive-technology usability still require separate validation.")

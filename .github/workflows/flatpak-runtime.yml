@@ -1,0 +1,56 @@
+name: Flatpak installed-app test
+on:
+  workflow_dispatch:
+    inputs:
+      build_run:
+        description: Successful main-branch Flatpak sandbox build run
+        required: true
+        default: '34700537258'
+permissions:
+  contents: read
+  actions: read
+jobs:
+  runtime:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - name: Retrieve a verified development build
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BUILD_RUN: ${{ inputs.build_run }}
+        run: |
+          [[ "$BUILD_RUN" =~ ^[0-9]+$ ]]
+          gh api "repos/$GITHUB_REPOSITORY/actions/runs/$BUILD_RUN" > build-run.json
+          jq -e '.path == ".github/workflows/flatpak.yml" and .head_branch == "main" and .event == "workflow_dispatch" and .conclusion == "success"' build-run.json
+          gh run download "$BUILD_RUN" --name Plainmark-development-flatpak --dir candidate
+          sha256sum candidate/*.flatpak > package-sha256.txt
+      - name: Install the application and test desktop
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y flatpak xvfb dbus-x11 xdg-desktop-portal-gtk python3-pyatspi gir1.2-gtk-3.0
+          flatpak remote-add --user --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
+          flatpak install --user --noninteractive flathub org.gnome.Platform//50
+          flatpak install --user --noninteractive candidate/*.flatpak
+          flatpak info --user --show-permissions io.github.gopalasubramanium.plainmark | tee sandbox-permissions.txt
+          ! grep -E 'filesystems=|shared=.*network|devices=.*all|sockets=.*system-bus' sandbox-permissions.txt
+      - name: Open a portal-granted document in the installed app
+        env:
+          GTK_USE_PORTAL: '1'
+          GTK_MODULES: gail:atk-bridge
+          XDG_CURRENT_DESKTOP: GNOME
+          NO_AT_BRIDGE: '0'
+        run: xvfb-run -a -s '-screen 0 1600x1000x24' dbus-run-session -- python3 scripts/test-flatpak-runtime.py
+      - name: Preserve runtime evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: Plainmark-Flatpak-runtime-evidence
+          path: |
+            build-run.json
+            package-sha256.txt
+            sandbox-permissions.txt
+            flatpak-runtime.log
+            flatpak-accessibility.txt
+            flatpak-desktop.png
+          retention-days: 14
