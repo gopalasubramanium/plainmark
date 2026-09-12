@@ -2,6 +2,7 @@
 // Everyday Markdown, free of ads, subscriptions, and interruptions. See AUTHORS.md.
 import './style.css';
 import welcome from './welcome.md?raw';
+import { version } from '../package.json';
 import { invoke } from '@tauri-apps/api/core';
 import { icon } from './icons';
 import { escapeHtml, exportPage, renderMarkdown, statistics } from './markdown';
@@ -25,7 +26,7 @@ const app = $('#app');
 const button = (action: string, glyph: string, label: string, shortcut = '') => `<button class="icon-button" data-action="${action}" title="${label}${shortcut ? ` (${shortcut})` : ''}" aria-label="${label}">${icon(glyph)}</button>`;
 app.innerHTML = `
   <aside class="sidebar" aria-label="Document navigation">
-    <div class="brand"><img src="/mark.svg" alt="" width="32" height="32"><span>plainmark<span class="brand-dot">.</span></span><span class="version">0.3</span></div>
+    <div class="brand"><img src="/mark.svg" alt="" width="32" height="32"><span>plainmark<span class="brand-dot">.</span></span><span class="version">${escapeHtml(version)}</span></div>
     <div class="file-actions">
       <button class="new-button" data-action="new">${icon('plus')}<span>New document</span><kbd>${mod}N</kbd></button>
       <button class="open-button" data-action="open">${icon('file')}<span>Open a file</span><kbd>${mod}O</kbd></button>

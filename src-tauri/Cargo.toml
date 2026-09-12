@@ -42,3 +42,6 @@ glib = "0.18"
 # Windows and macOS retain their native file panels.
 [target.'cfg(target_os = "linux")'.dependencies]
 tauri-plugin-dialog = { version = "2", default-features = false, features = ["xdg-portal"] }
+
+[target.'cfg(target_os = "macos")'.dependencies]
+objc2-foundation = { version = "0.3", default-features = false, features = ["std", "NSError", "NSFileManager", "NSPathUtilities", "NSString", "NSURL"] }

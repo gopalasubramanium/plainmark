@@ -50,6 +50,7 @@ pub fn read_limited(path: &Path, limit: usize) -> Result<Vec<u8>, String> {
 
 // Write to a sibling temporary file, flush it, then replace the destination atomically.
 // tempfile uses the appropriate replacement operation on Unix and Windows.
+#[cfg(not(target_os = "macos"))]
 pub fn atomic_write(path: &Path, bytes: &[u8]) -> Result<(), String> {
     let parent = path.parent().ok_or("The file has no parent folder.")?;
     let mut temporary = tempfile::NamedTempFile::new_in(parent).map_err(|e| e.to_string())?;
@@ -66,6 +67,99 @@ pub fn atomic_write(path: &Path, bytes: &[u8]) -> Result<(), String> {
     temporary.as_file().sync_all().map_err(|e| e.to_string())?;
     temporary.persist(path).map_err(|e| e.to_string())?;
     Ok(())
+}
+
+// A sandbox grant to one Mac file does not include its parent directory. Ask
+// Foundation for a replacement directory on the same volume, then replace only
+// the selected file. Never fall back to truncating the original in place.
+#[cfg(target_os = "macos")]
+pub fn atomic_write(path: &Path, bytes: &[u8]) -> Result<(), String> {
+    use objc2_foundation::{
+        NSFileManager, NSFileManagerItemReplacementOptions, NSSearchPathDirectory,
+        NSSearchPathDomainMask, NSURL,
+    };
+    let existing = match fs::metadata(path) {
+        Ok(metadata) => {
+            if !metadata.is_file() {
+                return Err("Please choose a regular file.".into());
+            }
+            if metadata.permissions().readonly() {
+                return Err("This file is read-only. Use Save as to save a copy.".into());
+            }
+            true
+        }
+        Err(error) if error.kind() == std::io::ErrorKind::NotFound => false,
+        Err(error) => return Err(error.to_string()),
+    };
+    let destination = NSURL::from_file_path(path).ok_or("Invalid file path.")?;
+    // Foundation requires an existing item when locating its volume. Passing a
+    // not-yet-created destination can create a directory at that filename.
+    let volume_item = if existing {
+        NSURL::from_file_path(path)
+    } else {
+        NSURL::from_directory_path(path.parent().ok_or("The file has no parent folder.")?)
+    }
+    .ok_or("Invalid volume path.")?;
+    let manager = NSFileManager::defaultManager();
+    let directory = manager
+        .URLForDirectory_inDomain_appropriateForURL_create_error(
+            NSSearchPathDirectory::ItemReplacementDirectory,
+            NSSearchPathDomainMask::UserDomainMask,
+            Some(&volume_item),
+            true,
+        )
+        .map_err(|error| error.to_string())?;
+    let directory_path = directory
+        .to_file_path()
+        .ok_or("Invalid replacement folder.")?;
+    let outcome = (|| {
+        let mut temporary =
+            tempfile::NamedTempFile::new_in(&directory_path).map_err(|error| error.to_string())?;
+        temporary
+            .write_all(bytes)
+            .map_err(|error| error.to_string())?;
+        temporary
+            .as_file()
+            .sync_all()
+            .map_err(|error| error.to_string())?;
+        let replacement =
+            NSURL::from_file_path(temporary.path()).ok_or("Invalid temporary file.")?;
+        if !existing {
+            return temporary
+                .persist_noclobber(path)
+                .map(|_| ())
+                .map_err(|error| {
+                    let reason = error.error.to_string();
+                    let _ = error.file.keep();
+                    format!(
+                        "Save failed: {reason}. Recovery files are in {}.",
+                        directory_path.display()
+                    )
+                });
+        }
+        let result = manager
+            .replaceItemAtURL_withItemAtURL_backupItemName_options_resultingItemURL_error(
+                &destination,
+                &replacement,
+                None,
+                NSFileManagerItemReplacementOptions::empty(),
+                None,
+            );
+        if let Err(error) = result {
+            // Foundation can report a relocated original after a failed replace.
+            // Retain this operation's directory and new data for recovery.
+            let _ = temporary.keep();
+            return Err(format!(
+                "Save failed: {error}. Recovery files, if any, are in {}.",
+                directory_path.display()
+            ));
+        }
+        Ok(())
+    })();
+    if outcome.is_ok() {
+        let _ = fs::remove_dir_all(&directory_path);
+    }
+    outcome
 }
 
 impl FileStore {
@@ -474,6 +568,29 @@ impl FileStore {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[cfg(target_os = "macos")]
+    #[test]
+    fn native_replacement_preserves_permissions_and_rejects_read_only_files_and_folders() {
+        use std::os::unix::fs::PermissionsExt;
+        let dir = tempfile::tempdir().unwrap();
+        let path = dir.path().join("a new document.md");
+        atomic_write(&path, b"first").unwrap();
+        assert!(path.is_file());
+        fs::set_permissions(&path, fs::Permissions::from_mode(0o640)).unwrap();
+        atomic_write(&path, b"second").unwrap();
+        assert_eq!(
+            fs::metadata(&path).unwrap().permissions().mode() & 0o777,
+            0o640
+        );
+        fs::set_permissions(&path, fs::Permissions::from_mode(0o440)).unwrap();
+        assert!(atomic_write(&path, b"third").is_err());
+        assert_eq!(fs::read(&path).unwrap(), b"second");
+        assert!(atomic_write(dir.path(), b"not a file").is_err());
+        assert!(dir.path().is_dir());
+        fs::set_permissions(&path, fs::Permissions::from_mode(0o640)).unwrap();
+        assert_eq!(fs::read_dir(dir.path()).unwrap().count(), 1);
+    }
     #[test]
     fn linked_notes_stay_in_scope_and_keep_existing_tab_identity() {
         let dir = tempfile::tempdir().unwrap();

@@ -45,3 +45,7 @@ Release builds add per-platform SHA-256 files and GitHub artifact attestations a
 The dedicated signed-macOS workflow can replace Mac artifacts only in an unpublished draft after the ordinary release workflow succeeds. It refuses missing signing credentials, checks Developer ID, hardened runtime, notarization and Gatekeeper, and leaves the release as a draft. Windows requires provider onboarding and signing of both the inner executable and installer. Follow [SIGNING.md](SIGNING.md); source preparation is not proof of successful signing.
 
 `DEPENDABOT-PENDING.yml` is a prepared configuration, not active automation. Additional dependency-alert settings, automated fix PRs and weekly scans await explicit maintainer approval.
+
+## Homebrew synchronization
+
+The official `gopalasubramanium/homebrew-plainmark` tap stores installation metadata, not application source. Its scheduled workflow checks public releases every four hours and can also be started manually. Before changing cask version/hash values it verifies both Mac artifacts, GitHub attestations, the separately attested source-binding manifests, Developer ID/team, notarization, stapling and Gatekeeper, then installs/audits the cask. Keep the signing workflow’s per-architecture provenance JSON assets with each future Mac release. A missing proof, changed hash for an existing version, or failed validation stops synchronization. The immutable v0.3.3 preview remains the current cask until a newer complete verified release is published.
