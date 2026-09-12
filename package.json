@@ -1,6 +1,6 @@
 {
   "name": "plainmark",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "description": "A quiet, free, open-source Markdown editor for Windows, macOS, and Linux.",
   "license": "GPL-3.0-or-later",
@@ -30,7 +30,19 @@
     "@lezer/highlight": "^1.2.3",
     "@tauri-apps/api": "^2.11.1",
     "dompurify": "^3.4.15",
-    "markdown-it": "^15.0.1"
+    "katex": "^0.18.7",
+    "markdown-it": "^15.0.1",
+    "mermaid": "^12.0.0",
+    "prosemirror-commands": "^1.7.2",
+    "prosemirror-history": "^1.5.0",
+    "prosemirror-inputrules": "^1.5.1",
+    "prosemirror-keymap": "^1.2.3",
+    "prosemirror-markdown": "^1.13.7",
+    "prosemirror-model": "^1.25.11",
+    "prosemirror-schema-list": "^1.5.1",
+    "prosemirror-state": "^1.4.4",
+    "prosemirror-tables": "^1.8.5",
+    "prosemirror-view": "^1.42.3"
   },
   "devDependencies": {
     "@playwright/test": "^1.63.0",

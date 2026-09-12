@@ -8,11 +8,13 @@ Include the affected version and OS, a minimal reproduction, and the expected im
 
 ## Boundaries
 
-- Markdown HTML is disabled and preview output is sanitized.
-- Content Security Policy disallows remote scripts, frames, and remote images.
+- Raw HTML has a sanitized static preview. Scripts require an explicit Run HTML action and execute in an opaque sandbox frame.
+- The main app’s Content Security Policy forbids remote scripts and permits only the dedicated HTML preview frame.
+- The HTML frame allows inline scripts and styling but blocks fetch/XHR, remote subresources, workers, forms, popups, and top-level navigation. It has no same-origin privilege. Desktop navigation is restricted to application protocols; the browser development preview is not a security boundary for arbitrary navigation by code you run.
+- Executable HTML can consume CPU or attempt navigation within its frame. Run code you trust. It is not a general-purpose malware analysis sandbox. Closing the frame stops it.
 - The UI has no generic filesystem, shell, or HTTP plugin capability.
-- Rust-owned file dialogs select the documents the backend may access.
-- Local images must be recognized raster formats within the document’s folder; path traversal and symlink escapes are rejected.
+- Rust-owned dialogs, explicitly selected workspaces, and OS file-opening events grant document access. Tabs receive separate opaque file IDs.
+- Local images must be recognized raster formats or SVG within the selected workspace/document folder. SVG is sanitized and displayed as an image, never injected as active SVG. Path traversal and symlink escapes are rejected.
 - UTF-8 documents are limited to 5 MB; local images to 10 MB each.
 - Recovery drafts are stored locally and are not encrypted.
 

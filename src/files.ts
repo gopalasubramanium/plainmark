@@ -2,8 +2,9 @@ import { invoke, isTauri } from '@tauri-apps/api/core';
 
 export const native = isTauri();
 export const MAX_BYTES = 5 * 1024 * 1024;
-interface BrowserFileHandle {
+export interface BrowserFileHandle {
   name: string;
+  isSameEntry?(other: BrowserFileHandle): Promise<boolean>;
   getFile(): Promise<File>;
   createWritable(): Promise<{ write(data: Blob | string): Promise<void>; close(): Promise<void> }>;
 }
@@ -13,6 +14,9 @@ interface PickerWindow extends Window {
 }
 export interface DocumentFile {
   id?: number;
+  path?: string;
+  workspaceId?: number;
+  relativePath?: string;
   name: string;
   text: string;
   handle?: BrowserFileHandle;
@@ -20,7 +24,7 @@ export interface DocumentFile {
   crlf?: boolean;
   bom?: boolean;
 }
-const options = { types: [{ description: 'Markdown', accept: { 'text/markdown': ['.md', '.markdown', '.mdown', '.txt'] } }] };
+const options = { types: [{ description: 'Markdown', accept: { 'text/markdown': ['.md', '.markdown', '.mdown', '.txt', '.html', '.htm'] } }] };
 
 export function normalize(text: string) { return text.replace(/\r\n?/g, '\n'); }
 export async function readBrowserFile(file: File, handle?: BrowserFileHandle): Promise<DocumentFile> {
@@ -35,7 +39,7 @@ export async function readBrowserFile(file: File, handle?: BrowserFileHandle): P
 
 function fallbackOpen(): Promise<File | null> {
   return new Promise((resolve) => {
-    const input = document.createElement('input'); input.type = 'file'; input.accept = '.md,.markdown,.mdown,.txt,text/plain,text/markdown';
+    const input = document.createElement('input'); input.type = 'file'; input.accept = '.md,.markdown,.mdown,.txt,.html,.htm,text/plain,text/markdown,text/html';
     input.hidden = true; document.body.append(input);
     const done = (file: File | null) => { input.remove(); resolve(file); };
     input.addEventListener('change', () => done(input.files?.[0] ?? null), { once: true });
@@ -63,14 +67,14 @@ export function download(name: string, content: Blob) {
   setTimeout(() => URL.revokeObjectURL(url), 30_000);
 }
 
-export async function saveFile(file: DocumentFile, text: string, saveAs: boolean): Promise<{ file: DocumentFile; downloaded: boolean } | null> {
+export async function saveFile(file: DocumentFile, text: string, saveAs: boolean, otherFiles: DocumentFile[] = []): Promise<{ file: DocumentFile; downloaded: boolean } | null> {
   if (new TextEncoder().encode(text).length > MAX_BYTES) throw new Error('Documents must be 5 MB or smaller.');
   if (native) {
     if (file.id !== undefined && !saveAs) {
       await invoke('save_document', { id: file.id, text });
       return { file: { ...file, text }, downloaded: false };
     }
-    const saved = await invoke<DocumentFile | null>('save_document_as', { name: file.name, text });
+    const saved = await invoke<DocumentFile | null>('save_document_as', { name: file.name, text, id: file.id ?? null });
     return saved ? { file: saved, downloaded: false } : null;
   }
   const picker = window as PickerWindow;
@@ -81,6 +85,7 @@ export async function saveFile(file: DocumentFile, text: string, saveAs: boolean
     const encoded = new TextEncoder().encode(value);
     if (encoded.length > MAX_BYTES) throw new Error('Documents must be 5 MB or smaller.');
     if (handle) {
+      for (const other of otherFiles) if (other.handle && (handle === other.handle || await handle.isSameEntry?.(other.handle))) throw new Error('That file is already open in another tab. Choose a different name.');
       // Check even when Save as selects the same file.
       const same = handle === file.handle || (file.handle && 'isSameEntry' in handle && await (handle as BrowserFileHandle & { isSameEntry(other: BrowserFileHandle): Promise<boolean> }).isSameEntry(file.handle));
       if (same && file.original) {
@@ -90,7 +95,7 @@ export async function saveFile(file: DocumentFile, text: string, saveAs: boolean
         }
       }
       const writer = await handle.createWritable(); await writer.write(new Blob([encoded])); await writer.close();
-      return { file: { ...file, text, name: handle.name, handle, original: encoded }, downloaded: false };
+      return { file: { ...file, ...(!same ? { workspaceId: undefined, relativePath: undefined } : {}), text, name: handle.name, handle, original: encoded }, downloaded: false };
     }
     download(file.name, new Blob([encoded], { type: 'text/markdown;charset=utf-8' }));
     return { file: { ...file, text }, downloaded: true };

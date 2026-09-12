@@ -58,7 +58,7 @@ jobs:
           tagName: ${{ github.ref_name }}
           releaseName: Plainmark v__VERSION__
           releaseBody: |
-            A little space for your words. Free Markdown editing for Windows, macOS, and Linux.
+            Visual Markdown editing, folder workspaces, tabs, Mermaid and math, SVG previews, isolated runnable HTML, block scroll synchronization, and native Open with support for Windows, macOS, and Linux.
 
             Early preview: publisher signing/notarization and manual installation verification on every supported OS are still pending. macOS packages are ad-hoc signed; Windows packages are unsigned. See README for prerequisites and known limitations.
 

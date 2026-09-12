@@ -1,6 +1,6 @@
 import { Compartment, EditorSelection, EditorState } from '@codemirror/state';
 import { EditorView, keymap, lineNumbers, highlightActiveLine, highlightActiveLineGutter, drawSelection, rectangularSelection } from '@codemirror/view';
-import { defaultKeymap, history, historyKeymap, indentWithTab } from '@codemirror/commands';
+import { defaultKeymap, history, historyKeymap, indentWithTab, undo, redo } from '@codemirror/commands';
 import { markdown, markdownKeymap } from '@codemirror/lang-markdown';
 import { syntaxHighlighting, HighlightStyle, bracketMatching, indentOnInput } from '@codemirror/language';
 import { search, searchKeymap, highlightSelectionMatches, openSearchPanel } from '@codemirror/search';
@@ -28,6 +28,7 @@ export function createEditor(parent: HTMLElement, text: string, onChange: (text:
     ])),
     editable.of(EditorView.editable.of(true)),
     EditorView.updateListener.of((update) => {
+      if (update.geometryChanged || update.viewportChanged) update.view.dom.dispatchEvent(new CustomEvent('source-layout'));
       if (update.docChanged) onChange(update.state.doc.toString());
       if (update.selectionSet || update.docChanged) {
         const pos = update.state.selection.main.head;
@@ -39,9 +40,12 @@ export function createEditor(parent: HTMLElement, text: string, onChange: (text:
   const view = new EditorView({ state: EditorState.create({ doc: text, extensions }), parent });
   return {
     view,
-    load(value: string) { view.setState(EditorState.create({ doc: value, extensions })); },
+    load(value: string, state?: EditorState) { view.setState(state ?? EditorState.create({ doc: value, extensions })); },
+    snapshot() { return view.state; },
     setEditable(value: boolean) { view.dispatch({ effects: editable.reconfigure(EditorView.editable.of(value)) }); },
     find() { openSearchPanel(view); },
+    undo() { undo(view); view.focus(); },
+    redo() { redo(view); view.focus(); },
     jump(line: number) {
       const position = view.state.doc.line(Math.min(line, view.state.doc.lines)).from;
       view.dispatch({ selection: { anchor: position }, effects: EditorView.scrollIntoView(position, { y: 'start' }) });

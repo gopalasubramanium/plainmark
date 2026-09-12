@@ -4,10 +4,10 @@ import { exportPage, renderMarkdown, statistics } from '../src/markdown';
 describe('Markdown preview', () => {
   it('renders headings, tables, strikethrough, tasks, code, and an outline', () => {
     const result = renderMarkdown('# Title\n\n## Next **step**\n\n- [x] Done\n- [ ] Next\n\n| A | B |\n|---|---|\n| 1 | 2 |\n\n~~old~~\n\n```js\nconst a = 1;\n```');
-    expect(result.html).toContain('<table>');
+    expect(result.html).toContain('<table ');
     expect(result.html).toContain('<s>old</s>');
-    expect(result.html).toContain('aria-checked="true"');
-    expect(result.html).toContain('aria-checked="false"');
+    expect(result.html).toContain('data-task="true"');
+    expect(result.html).toContain('data-task="false"');
     expect(result.html).toContain('language-js');
     expect(result.headings).toEqual([{ id: 'section-0', text: 'Title', level: 1, line: 1 }, { id: 'section-1', text: 'Next step', level: 2, line: 3 }]);
   });

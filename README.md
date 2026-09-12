@@ -3,13 +3,13 @@
 <p align="center">A little space for your words.</p>
 <p align="center">A free, open-source Markdown viewer and editor for Windows, macOS, and Linux.<br>No accounts. No ads. No tracking. No paid features.</p>
 
-![Plainmark in split view](docs/screenshot.png)
+![Plainmark in visual editing view](docs/screenshot.png)
 
 ## Get Plainmark
 
 **[Visit the Plainmark website](https://markdown.eksaar.com)** · [Download the latest preview release](https://github.com/gopalasubramanium/plainmark/releases) · [Report a bug](https://github.com/gopalasubramanium/plainmark/issues) · [Contribute](CONTRIBUTING.md)
 
-Plainmark is at **0.1.0**, an early preview. Choose the installer for your computer:
+Plainmark is at **0.2.0**, an early preview. Choose the installer for your computer:
 
 | Platform | Download | Target |
 | --- | --- | --- |
@@ -24,7 +24,12 @@ The preview installers are **not publisher-signed/notarized**. macOS uses ad-hoc
 
 ## Your words, without the noise
 
-- **Write, Split, Read.** A focused editor, an instant preview, or a comfortable reading view.
+- **Visual, Source, Split, Read.** Edit the formatted document directly, work with Markdown, or settle into a reading view.
+- **Folder workspaces and tabs.** Browse folders on demand, keep several documents open, and retain each tab’s editing history.
+- **Mermaid and TeX math.** Locally rendered diagrams and native MathML, with no CDN or font downloads.
+- **Runnable HTML.** Explicitly start a block’s scripts in an isolated preview; editing or changing tabs stops it.
+- **Block scroll synchronization.** Source and preview track matching Markdown block boundaries in both directions.
+- **Open with Plainmark.** Installers register `.md`, `.markdown`, and `.mdown` with the OS. Choosing Plainmark as your default remains your choice.
 - **Real local files.** Open, edit, save, and save a copy using native file dialogs.
 - **Markdown essentials.** Headings, tables, task lists, strikethrough, quotes, links, and fenced code.
 - **A proper editor.** Markdown syntax colors, undo/redo, line numbers, find/replace, formatting shortcuts, and keyboard navigation.
@@ -32,7 +37,7 @@ The preview installers are **not publisher-signed/notarized**. macOS uses ad-hoc
 - **Thoughtful safeguards.** Unsaved-change prompts, local crash recovery, atomic saves, and detection of external file edits.
 - **Light and dark themes.** System fonts, balanced spacing, and no external font downloads.
 - **Offline HTML export.** Export a self-contained reading copy with any successfully loaded local images embedded.
-- **Local images.** PNG, JPEG, GIF, and WebP inside the opened document’s folder.
+- **Local images.** PNG, JPEG, GIF, WebP, and sanitized SVG inside the selected workspace or document folder.
 
 Files remain plain UTF-8 Markdown. Existing BOMs and Windows CRLF line endings are preserved on normal saves. New files use UTF-8 and LF. A file containing mixed newline styles is normalized to one style.
 
@@ -44,11 +49,11 @@ The code is licensed under **GPL-3.0-or-later**. You can use, study, change, and
 
 ## Privacy and safety
 
-Opening a document does not send its contents anywhere. Remote Markdown images are represented by placeholders rather than fetched, and raw HTML is shown as text. Rendered Markdown is additionally sanitized. External links open in your browser only when clicked.
+Opening a document does not send its contents anywhere. Remote Markdown images are represented by placeholders rather than fetched, and HTML receives a sanitized static preview. Scripts run only after **Run HTML** is selected. That frame has an opaque origin, no app or file access, and restrictive content rules. Normal preview output is sanitized. External links open in your browser only when clicked.
 
-While you edit, one recovery draft is stored in the app’s local webview storage. It is removed when you save or deliberately discard and replace/close the document. A recovered draft opens as a copy and must be saved again. Recovery storage is not encrypted; clearing app/browser data removes it. Normal file saves are explicit, not automatic.
+While you edit, recovery copies of unsaved tabs are stored in the app’s local webview storage. Each copy is removed when you save or deliberately discard that tab. A recovered draft opens as a copy and must be saved again. Recovery storage is not encrypted; clearing app/browser data removes it. Normal file saves are explicit, not automatic.
 
-The native backend only reads and writes files selected through its dialogs. Local image access is confined to the document’s folder, including symlink checks. If a file changes externally, save a copy under a different name or reopen the newer version. Plainmark does not merge concurrent edits.
+The native backend opens files selected through native dialogs, a selected workspace, or the OS “Open with” action. It never recursively scans a workspace at startup. Local image access is confined to the selected workspace or document folder, including symlink checks. If a file changes externally, save a copy under a different name or reopen the newer version. Plainmark does not merge concurrent edits.
 
 ## Build from source
 
@@ -69,7 +74,7 @@ pnpm desktop:build
 
 Bundles are written under `src-tauri/target/release/bundle/`. GitHub Actions also builds Windows, Linux, and both Mac architectures. See [release instructions](docs/RELEASING.md).
 
-For a browser-only development preview, use `pnpm dev`. Browsers with the File System Access API can save files in place; other browsers download a copy. Browser mode can open files and export HTML, but cannot resolve adjacent local images. It is a development preview, not an installed offline web app.
+For a browser-only development preview, use `pnpm dev`. Browsers with the File System Access API can save files in place; other browsers download a copy. Browser mode can resolve local images after you open their containing folder. HTML execution uses an in-memory endpoint in the local development/preview server; arbitrary static hosting does not provide that endpoint. It is a development preview, not an installed offline web app.
 
 ## Keyboard shortcuts
 
@@ -78,19 +83,26 @@ Use **Cmd** on macOS and **Ctrl** on Windows/Linux.
 | Action | Shortcut |
 | --- | --- |
 | New / Open / Save | Mod+N / Mod+O / Mod+S |
-| Save as | Mod+Shift+S |
+| Open folder / Save as / Save all | Mod+Shift+O / Mod+Shift+S / Mod+Alt+S |
+| Close tab / Next tab | Mod+W / Ctrl+Tab |
 | Bold / Italic / Link | Mod+B / Mod+I / Mod+K |
 | Find and replace | Mod+F |
-| Write / Split / Read | Mod+1 / Mod+2 / Mod+3 |
+| Visual / Source / Split / Read | Mod+1 / Mod+2 / Mod+3 / Mod+4 |
 | Focus mode | Mod+Shift+F; Esc to leave |
 | Undo / Redo | Mod+Z / Mod+Shift+Z |
 | Leave the editor using Tab | Esc, then Tab |
 
 ## Small by design
 
-Plainmark uses **Tauri 2**, vanilla TypeScript, CodeMirror 6, markdown-it, and DOMPurify. It uses the operating system’s web renderer instead of shipping a separate browser engine. All application assets are bundled. Build tools and test browsers are development dependencies and are not shipped with the app.
+Plainmark uses **Tauri 2** and vanilla TypeScript. Rust owns file access, native dialogs, menus, single-instance opening, and the executable HTML protocol. The folder tree, tabs, recovery, and block mapping are maintained in this repository. ProseMirror supplies the visual editing engine; CodeMirror supplies source editing; markdown-it and DOMPurify handle parsing and sanitization; Mermaid and KaTeX handle their established languages. It uses the operating system’s web renderer instead of shipping a separate browser engine. All application assets are bundled. Build tools and test browsers are development dependencies and are not shipped with the app.
 
-The first version intentionally handles one document at a time, up to 5 MB. It does not yet include folder workspaces, tabs, Mermaid/math rendering, executable HTML, SVG image previews, or operating-system “Open with” file associations. Scroll synchronization is proportional rather than tied to exact Markdown blocks. It is a plain-text editor with a preview, not a WYSIWYG editor.
+The source editor, visual editor, diagrams, and math engines load on demand. Math uses the OS renderer’s MathML support rather than shipping math fonts. Diagram and image caches are bounded; folder entries load only when expanded. No UI framework, plugin marketplace, cloud service, or background indexer is included.
+
+Documents are limited to 5 MB, and files above 1 MB open in Source view to keep editing responsive. Up to 100 tabs can be open. A folder listing allows 2,000 visible entries and scans at most 20,000 directory entries; hidden folders, `node_modules`, and `target` are omitted. Rich rendering is bounded to 500 preview blocks, with 50,000-character diagrams and 20,000-character math expressions. HTML execution is limited to 512 KB.
+
+Visual editing supports CommonMark text formatting, nested lists, tasks, tables, images, frontmatter, math, diagrams, and HTML blocks. Complex blocks have an **Edit** control for their source. Visual edits normalize Markdown formatting (for example, list markers and table spacing); simply switching views preserves the original source. Keep Source view for dialect-specific syntax that Plainmark does not understand. Undo history is retained per tab and editor; editing in one representation resets the other representation’s history.
+
+See [the feature guide](docs/FEATURES.md) for examples and boundaries.
 
 ## Tests
 
@@ -102,7 +114,7 @@ pnpm test:e2e
 cargo test --locked --manifest-path src-tauri/Cargo.toml
 ```
 
-The suites cover editor behavior in Chromium and WebKit, recovery, local-file round trips, HTML sanitization, remote-image blocking, native save conflicts, UTF-8 validation, line endings, and file-access boundaries. Automated tests do not replace manual installer checks on each supported OS.
+The suites cover visual Markdown round trips, editing in Chromium and WebKit, independent tabs and recovery, folders and SVG, math and Mermaid, HTML isolation, block synchronization, native save conflicts, UTF-8, line endings, and file-access boundaries. Automated tests do not replace manual installer checks on each supported OS.
 
 ## Contribute
 

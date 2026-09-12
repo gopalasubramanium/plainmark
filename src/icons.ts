@@ -1,4 +1,5 @@
 const paths: Record<string, string> = {
+  refresh: '<path d="M20 7v5h-5M4 17v-5h5M6 7a7 7 0 0 1 12-2l2 2M4 17l2 2a7 7 0 0 0 12-2"/>',
   plus: '<path d="M12 5v14M5 12h14"/>',
   folder: '<path d="M3 7V5a2 2 0 0 1 2-2h4l2 3h8a2 2 0 0 1 2 2v2M3 7h15a2 2 0 0 1 2 2l-2 10H3L1 9a2 2 0 0 1 2-2Z"/>',
   file: '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><path d="M14 2v6h6M8 13h8M8 17h5"/>',

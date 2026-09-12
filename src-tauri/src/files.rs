@@ -14,6 +14,7 @@ pub struct Document {
     pub id: u64,
     pub name: String,
     pub text: String,
+    pub path: String,
 }
 
 struct Entry {
@@ -21,12 +22,14 @@ struct Entry {
     baseline: Vec<u8>,
     crlf: bool,
     bom: bool,
+    image_root: PathBuf,
 }
 
 #[derive(Default)]
 pub struct FileStore {
     next_id: u64,
     entries: HashMap<u64, Entry>,
+    workspaces: HashMap<u64, PathBuf>,
 }
 
 pub fn read_limited(path: &Path, limit: usize) -> Result<Vec<u8>, String> {
@@ -68,6 +71,28 @@ pub fn atomic_write(path: &Path, bytes: &[u8]) -> Result<(), String> {
 impl FileStore {
     pub fn open(&mut self, path: PathBuf) -> Result<Document, String> {
         let path = path.canonicalize().map_err(|e| e.to_string())?;
+        if let Some((&id, entry)) = self.entries.iter().find(|(_, entry)| entry.path == path) {
+            let bytes = if entry.bom {
+                &entry.baseline[3..]
+            } else {
+                &entry.baseline[..]
+            };
+            return Ok(Document {
+                id,
+                name: path
+                    .file_name()
+                    .unwrap_or_default()
+                    .to_string_lossy()
+                    .into_owned(),
+                path: path.to_string_lossy().into_owned(),
+                text: String::from_utf8_lossy(bytes)
+                    .replace("\r\n", "\n")
+                    .replace('\r', "\n"),
+            });
+        }
+        if self.entries.len() >= 100 {
+            return Err("Close a tab before opening more documents (100 tab limit).".into());
+        }
         let bytes = read_limited(&path, MAX_DOCUMENT_BYTES)?;
         let bom = bytes.starts_with(&[0xef, 0xbb, 0xbf]);
         let text = std::str::from_utf8(if bom { &bytes[3..] } else { &bytes })
@@ -86,9 +111,15 @@ impl FileStore {
                 .to_string_lossy()
                 .into_owned(),
             text: normalized,
+            path: path.to_string_lossy().into_owned(),
         };
-        // One document is open at a time. Older file capabilities are revoked.
-        self.entries.clear();
+        let image_root = self
+            .workspaces
+            .values()
+            .filter(|root| path.starts_with(root))
+            .max_by_key(|root| root.components().count())
+            .cloned()
+            .unwrap_or_else(|| path.parent().unwrap().to_path_buf());
         self.entries.insert(
             document.id,
             Entry {
@@ -96,6 +127,7 @@ impl FileStore {
                 baseline: bytes,
                 crlf,
                 bom,
+                image_root,
             },
         );
         Ok(document)
@@ -131,7 +163,12 @@ impl FileStore {
         Ok(())
     }
 
-    pub fn save_as(&mut self, path: PathBuf, text: &str) -> Result<Document, String> {
+    pub fn save_as(
+        &mut self,
+        path: PathBuf,
+        text: &str,
+        origin: Option<u64>,
+    ) -> Result<Document, String> {
         if text.len() > MAX_DOCUMENT_BYTES {
             return Err("Documents must be 5 MB or smaller.".into());
         }
@@ -143,9 +180,13 @@ impl FileStore {
         };
         // Preserve conflict detection even when Save as selects the current document.
         if let Some((&id, _)) = self.entries.iter().find(|(_, entry)| entry.path == path) {
+            if origin != Some(id) {
+                return Err("That file is already open in another tab. Switch to it or choose a different name.".into());
+            }
             self.save(id, text)?;
             return Ok(Document {
                 id,
+                path: path.to_string_lossy().into_owned(),
                 name: path
                     .file_name()
                     .unwrap_or_default()
@@ -153,6 +194,9 @@ impl FileStore {
                     .into(),
                 text: text.into(),
             });
+        }
+        if self.entries.len() >= 100 {
+            return Err("Close a tab before saving another file (100 tab limit).".into());
         }
         atomic_write(&path, text.as_bytes())?;
         self.open(path)
@@ -165,9 +209,9 @@ impl FileStore {
         let relative = Path::new(relative);
         if relative.is_absolute()
             || relative.components().any(|c| {
-                !matches!(
+                matches!(
                     c,
-                    std::path::Component::Normal(_) | std::path::Component::CurDir
+                    std::path::Component::Prefix(_) | std::path::Component::RootDir
                 )
             })
         {
@@ -177,7 +221,7 @@ impl FileStore {
             .join(relative)
             .canonicalize()
             .map_err(|e| e.to_string())?;
-        if !path.starts_with(parent) {
+        if !path.starts_with(&entry.image_root) {
             return Err("Image is outside the document's folder.".into());
         }
         let bytes = read_limited(&path, 10 * 1024 * 1024)?;
@@ -189,8 +233,15 @@ impl FileStore {
             "image/gif"
         } else if bytes.starts_with(b"RIFF") && bytes.get(8..12) == Some(b"WEBP") {
             "image/webp"
+        } else if path
+            .extension()
+            .and_then(|e| e.to_str())
+            .is_some_and(|e| e.eq_ignore_ascii_case("svg"))
+            && std::str::from_utf8(&bytes).is_ok()
+        {
+            "image/svg+xml"
         } else {
-            return Err("Supported local images: PNG, JPEG, GIF, WebP.".into());
+            return Err("Supported local images: PNG, JPEG, GIF, WebP, SVG.".into());
         };
         Ok(format!(
             "data:{};base64,{}",
@@ -200,9 +251,204 @@ impl FileStore {
     }
 }
 
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Workspace {
+    pub id: u64,
+    pub name: String,
+}
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct FolderEntry {
+    pub name: String,
+    pub path: String,
+    pub directory: bool,
+}
+
+pub fn is_document(path: &Path) -> bool {
+    path.extension().and_then(|e| e.to_str()).is_some_and(|e| {
+        matches!(
+            e.to_ascii_lowercase().as_str(),
+            "md" | "markdown" | "mdown" | "txt" | "html" | "htm"
+        )
+    })
+}
+
+impl FileStore {
+    pub fn close(&mut self, id: u64) {
+        self.entries.remove(&id);
+    }
+    pub fn add_workspace(&mut self, path: PathBuf) -> Result<Workspace, String> {
+        let root = path.canonicalize().map_err(|e| e.to_string())?;
+        if !root.is_dir() {
+            return Err("Please choose a folder.".into());
+        }
+        let id = if let Some((&id, _)) = self.workspaces.iter().find(|(_, p)| **p == root) {
+            id
+        } else {
+            self.next_id += 1;
+            self.workspaces.insert(self.next_id, root.clone());
+            self.next_id
+        };
+        for entry in self.entries.values_mut() {
+            if entry.path.starts_with(&root) {
+                entry.image_root = root.clone();
+            }
+        }
+        Ok(Workspace {
+            id,
+            name: root
+                .file_name()
+                .unwrap_or(root.as_os_str())
+                .to_string_lossy()
+                .into_owned(),
+        })
+    }
+    pub fn close_workspace(&mut self, id: u64) {
+        self.workspaces.remove(&id);
+    }
+    fn workspace_path(&self, id: u64, relative: &str) -> Result<PathBuf, String> {
+        let root = self.workspaces.get(&id).ok_or("Workspace closed")?;
+        let relative = Path::new(relative);
+        if relative.is_absolute() {
+            return Err("Choose a path inside the workspace.".into());
+        }
+        let path = root
+            .join(relative)
+            .canonicalize()
+            .map_err(|e| e.to_string())?;
+        if !path.starts_with(root) {
+            return Err("That path leaves the workspace.".into());
+        }
+        Ok(path)
+    }
+    pub fn list_folder(&self, id: u64, relative: &str) -> Result<Vec<FolderEntry>, String> {
+        let folder = self.workspace_path(id, relative)?;
+        let root = self.workspaces.get(&id).ok_or("Workspace closed")?;
+        let mut items = Vec::new();
+        for (scanned, entry) in fs::read_dir(folder).map_err(|e| e.to_string())?.enumerate() {
+            if scanned >= 20_000 {
+                return Err(
+                    "This folder contains more than 20,000 entries. Open a smaller subfolder."
+                        .into(),
+                );
+            }
+            let entry = entry.map_err(|e| e.to_string())?;
+            let name = entry.file_name().to_string_lossy().into_owned();
+            if name.starts_with('.') || matches!(name.as_str(), "node_modules" | "target") {
+                continue;
+            }
+            let Ok(path) = entry.path().canonicalize() else {
+                continue;
+            };
+            if !path.starts_with(root) {
+                continue;
+            }
+            let directory = path.is_dir();
+            if !directory && !is_document(&path) {
+                continue;
+            }
+            items.push(FolderEntry {
+                name,
+                path: entry
+                    .path()
+                    .strip_prefix(root)
+                    .map_err(|e| e.to_string())?
+                    .to_string_lossy()
+                    .replace('\\', "/"),
+                directory,
+            });
+            if items.len() > 2000 {
+                return Err(
+                    "This folder contains more than 2,000 documents. Open a smaller subfolder."
+                        .into(),
+                );
+            }
+        }
+        items.sort_by(|a, b| {
+            b.directory
+                .cmp(&a.directory)
+                .then_with(|| a.name.to_lowercase().cmp(&b.name.to_lowercase()))
+        });
+        Ok(items)
+    }
+    pub fn open_workspace_file(&mut self, id: u64, relative: &str) -> Result<Document, String> {
+        let path = self.workspace_path(id, relative)?;
+        if !is_document(&path) {
+            return Err("Choose a Markdown, text, or HTML document.".into());
+        }
+        self.open(path)
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn reopening_preserves_conflict_baseline_and_protects_other_tabs() {
+        let dir = tempfile::tempdir().unwrap();
+        let mut store = FileStore::default();
+        let a = store.save_as(dir.path().join("a.md"), "a", None).unwrap();
+        let b = store.save_as(dir.path().join("b.md"), "b", None).unwrap();
+        assert!(store
+            .save_as(dir.path().join("b.md"), "overwrite", Some(a.id))
+            .is_err());
+        fs::write(dir.path().join("a.md"), "external").unwrap();
+        let reopened = store.open(dir.path().join("a.md")).unwrap();
+        assert_eq!(reopened.id, a.id);
+        assert_eq!(reopened.text, "a");
+        assert!(store.save(a.id, "edits").is_err());
+        store.save(b.id, "still independent").unwrap();
+    }
+    #[test]
+    fn workspace_lists_lazily_and_limits_file_and_image_access() {
+        let dir = tempfile::tempdir().unwrap();
+        fs::create_dir(dir.path().join("notes")).unwrap();
+        fs::create_dir(dir.path().join("node_modules")).unwrap();
+        fs::write(dir.path().join("notes/a.md"), "a").unwrap();
+        fs::write(dir.path().join("b.HTML"), "<p>b</p>").unwrap();
+        fs::write(dir.path().join(".hidden.md"), "hidden").unwrap();
+        fs::write(dir.path().join("shape.svg"), "<svg/>").unwrap();
+        let mut store = FileStore::default();
+        let workspace = store.add_workspace(dir.path().to_path_buf()).unwrap();
+        assert_eq!(
+            store.add_workspace(dir.path().to_path_buf()).unwrap().id,
+            workspace.id
+        );
+        let items = store.list_folder(workspace.id, "").unwrap();
+        assert_eq!(
+            items.iter().map(|e| e.name.as_str()).collect::<Vec<_>>(),
+            vec!["notes", "b.HTML"]
+        );
+        assert!(store.list_folder(workspace.id, "..").is_err());
+        assert!(store
+            .open_workspace_file(workspace.id, "shape.svg")
+            .is_err());
+        let doc = store
+            .open_workspace_file(workspace.id, "notes/a.md")
+            .unwrap();
+        assert!(store
+            .image(doc.id, "../shape.svg")
+            .unwrap()
+            .starts_with("data:image/svg+xml;"));
+        store.close_workspace(workspace.id);
+        assert!(store.list_folder(workspace.id, "").is_err());
+        store.save(doc.id, "Still open").unwrap();
+    }
+    #[cfg(unix)]
+    #[test]
+    fn workspace_does_not_follow_symlinks_outside_root() {
+        let dir = tempfile::tempdir().unwrap();
+        let other = tempfile::tempdir().unwrap();
+        fs::write(other.path().join("outside.md"), "private").unwrap();
+        std::os::unix::fs::symlink(other.path(), dir.path().join("escape")).unwrap();
+        let mut store = FileStore::default();
+        let workspace = store.add_workspace(dir.path().to_path_buf()).unwrap();
+        assert!(store.list_folder(workspace.id, "").unwrap().is_empty());
+        assert!(store
+            .open_workspace_file(workspace.id, "escape/outside.md")
+            .is_err());
+    }
     #[test]
     fn saves_atomically_and_preserves_bom_and_windows_newlines() {
         let dir = tempfile::tempdir().unwrap();
@@ -227,15 +473,17 @@ mod tests {
         let doc = store.open(path.clone()).unwrap();
         fs::write(&path, "external").unwrap();
         assert!(store.save(doc.id, "mine").is_err());
-        assert!(store.save_as(path.clone(), "mine").is_err());
+        assert!(store.save_as(path.clone(), "mine", Some(doc.id)).is_err());
         assert_eq!(fs::read_to_string(path).unwrap(), "external");
     }
     #[test]
-    fn revokes_previous_file_and_does_not_recreate_deleted_files() {
+    fn keeps_tabs_independent_and_does_not_recreate_deleted_files() {
         let dir = tempfile::tempdir().unwrap();
         let mut store = FileStore::default();
-        let a = store.save_as(dir.path().join("a.md"), "a").unwrap();
-        let b = store.save_as(dir.path().join("b.md"), "b").unwrap();
+        let a = store.save_as(dir.path().join("a.md"), "a", None).unwrap();
+        let b = store.save_as(dir.path().join("b.md"), "b", None).unwrap();
+        store.save(a.id, "x").unwrap();
+        store.close(a.id);
         assert!(store.save(a.id, "x").is_err());
         fs::remove_file(dir.path().join("b.md")).unwrap();
         assert!(store.save(b.id, "b2").is_err());
@@ -258,7 +506,7 @@ mod tests {
     fn images_are_confined_and_validated() {
         let dir = tempfile::tempdir().unwrap();
         let mut store = FileStore::default();
-        let doc = store.save_as(dir.path().join("doc.md"), "").unwrap();
+        let doc = store.save_as(dir.path().join("doc.md"), "", None).unwrap();
         fs::write(dir.path().join("safe.png"), b"\x89PNG\r\n\x1a\nrest").unwrap();
         fs::write(dir.path().join("fake.png"), b"<script>bad()</script>").unwrap();
         assert!(store
