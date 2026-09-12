@@ -1,6 +1,6 @@
 [package]
 name = "plainmark"
-version = "0.3.3"
+version = "0.4.0"
 description = "A quiet, free Markdown editor"
 authors = ["Gopala Subramanium", "Plainmark contributors"]
 license = "GPL-3.0-or-later"
@@ -16,7 +16,7 @@ tauri-build = { version = "2", features = [] }
 
 [dependencies]
 tauri = { version = "2", features = [] }
-tauri-plugin-dialog = "2"
+tauri-plugin-dialog = { version = "2", default-features = false }
 tauri-plugin-opener = "2"
 tauri-plugin-single-instance = "2"
 serde = { version = "1", features = ["derive"] }
@@ -37,3 +37,8 @@ glib = { path = "vendor/glib" }
 
 [target.'cfg(target_os = "linux")'.dev-dependencies]
 glib = "0.18"
+
+# Use the desktop file portal for user-selected files and folders on Linux.
+# Windows and macOS retain their native file panels.
+[target.'cfg(target_os = "linux")'.dependencies]
+tauri-plugin-dialog = { version = "2", default-features = false, features = ["xdg-portal"] }

@@ -129,11 +129,22 @@ jobs:
           PY
       - id: checksums
         run: python3 scripts/release-checksums.py src-tauri/target/${{ matrix.target }}/release/bundle ${{ matrix.target }}
+      - id: source
+        name: Bind the checked-out app source to the final disk image
+        env:
+          RELEASE_TAG: ${{ inputs.tag }}
+          TARGET: ${{ matrix.target }}
+        run: python3 scripts/mac-release-provenance.py
       - uses: actions/attest-build-provenance@977bb373ede98d70efdf65b84cb5f73e068dcc2a # v3
         with:
-          subject-path: ${{ steps.checksums.outputs.artifacts }}
+          subject-path: |
+            ${{ steps.checksums.outputs.artifacts }}
+            ${{ steps.source.outputs.manifest }}
       - env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           RELEASE_TAG: ${{ inputs.tag }}
           CHECKSUM_FILE: ${{ steps.checksums.outputs.checksum }}
-        run: gh release upload "$RELEASE_TAG" "$CHECKSUM_FILE" --clobber
+          SOURCE_MANIFEST: ${{ steps.source.outputs.manifest }}
+        run: |
+          python3 scripts/check-signing-release.py
+          gh release upload "$RELEASE_TAG" "$CHECKSUM_FILE" "$SOURCE_MANIFEST" --clobber

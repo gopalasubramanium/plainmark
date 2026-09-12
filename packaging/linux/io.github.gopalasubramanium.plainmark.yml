@@ -1,0 +1,55 @@
+# Development manifest for sandbox tests, not a Flathub submission.
+app-id: io.github.gopalasubramanium.plainmark
+runtime: org.gnome.Platform
+runtime-version: '50'
+sdk: org.gnome.Sdk
+sdk-extensions:
+  - org.freedesktop.Sdk.Extension.rust-stable
+  - org.freedesktop.Sdk.Extension.node24
+command: plainmark
+finish-args:
+  - --share=ipc
+  - --socket=wayland
+  - --socket=fallback-x11
+  - --device=dri
+  - --env=GTK_USE_PORTAL=1
+build-options:
+  append-path: /usr/lib/sdk/rust-stable/bin:/usr/lib/sdk/node24/bin:/run/build/plainmark/flatpak-bin
+  env:
+    CARGO_HOME: /run/build/plainmark/cargo
+    CARGO_NET_OFFLINE: 'true'
+    PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1'
+modules:
+  - name: plainmark
+    buildsystem: simple
+    build-commands:
+      - mkdir -p flatpak-bin && ln -s ../flatpak-pnpm/bin/pnpm.cjs flatpak-bin/pnpm
+      - pnpm install --offline --frozen-lockfile --ignore-scripts
+      - cargo test --offline --locked --manifest-path src-tauri/Cargo.toml
+      - pnpm tauri build --no-bundle --config packaging/linux/tauri.flatpak.conf.json
+      - install -Dm755 src-tauri/target/release/plainmark /app/bin/plainmark
+      - install -Dm644 src-tauri/resources/LICENSE.txt /app/lib/plainmark/resources/LICENSE.txt
+      - install -Dm644 src-tauri/resources/THIRD_PARTY_NOTICES.txt /app/lib/plainmark/resources/THIRD_PARTY_NOTICES.txt
+      - install -Dm644 LICENSE /app/share/licenses/$FLATPAK_ID/LICENSE
+      - install -Dm644 src-tauri/resources/THIRD_PARTY_NOTICES.txt /app/share/licenses/$FLATPAK_ID/THIRD_PARTY_NOTICES.txt
+      - install -Dm644 packaging/linux/$FLATPAK_ID.desktop /app/share/applications/$FLATPAK_ID.desktop
+      - install -Dm644 packaging/linux/$FLATPAK_ID.metainfo.xml /app/share/metainfo/$FLATPAK_ID.metainfo.xml
+      - install -Dm644 src-tauri/icons/128x128@2x.png /app/share/icons/hicolor/256x256/apps/$FLATPAK_ID.png
+    sources:
+      - type: dir
+        path: ../..
+        skip:
+          - .git
+          - node_modules
+          - src-tauri/target
+          - dist
+          - .flatpak-builder
+          - flatpak-build
+          - flatpak-repo
+          - test-results
+      - type: archive
+        url: https://registry.npmjs.org/pnpm/-/pnpm-11.19.0.tgz
+        sha256: b9e49603540d04107b98e93917a30e6114970d403c23e40309a44ea9c2bca7fd
+        dest: flatpak-pnpm
+      - cargo-sources.json
+      - node-sources.json

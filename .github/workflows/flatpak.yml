@@ -1,0 +1,39 @@
+name: Flatpak sandbox build
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'packaging/linux/**'
+      - 'src-tauri/**'
+      - '.github/workflows/flatpak.yml'
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - name: Install Linux sandbox build tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y flatpak flatpak-builder appstream desktop-file-utils xvfb dbus-x11 xdg-desktop-portal-gtk
+          flatpak remote-add --user --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
+          flatpak install --user --noninteractive flathub org.gnome.Sdk//50 org.gnome.Platform//50 org.freedesktop.Sdk.Extension.rust-stable//25.08 org.freedesktop.Sdk.Extension.node24//25.08
+      - name: Build completely offline inside the sandbox
+        run: flatpak-builder --user --force-clean --sandbox --repo=flatpak-repo flatpak-build packaging/linux/io.github.gopalasubramanium.plainmark.yml
+      - name: Validate desktop integration and permissions
+        run: |
+          desktop-file-validate flatpak-build/files/share/applications/io.github.gopalasubramanium.plainmark.desktop
+          appstreamcli validate --no-net flatpak-build/files/share/metainfo/io.github.gopalasubramanium.plainmark.metainfo.xml
+          flatpak build-bundle flatpak-repo Plainmark-development.flatpak io.github.gopalasubramanium.plainmark
+          flatpak install --user --noninteractive Plainmark-development.flatpak
+          flatpak info --user --show-permissions io.github.gopalasubramanium.plainmark
+          ! flatpak info --user --show-permissions io.github.gopalasubramanium.plainmark | grep -E 'filesystems=|shared=.*network|devices=.*all|sockets=.*system-bus'
+      - name: Preserve the development package
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: Plainmark-development-flatpak
+          path: Plainmark-development.flatpak
+          retention-days: 14
+          if-no-files-found: error
