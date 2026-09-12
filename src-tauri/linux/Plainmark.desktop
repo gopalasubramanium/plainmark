@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=Plainmark
+Comment=A little space for your words.
+Exec=plainmark %F
+Icon=plainmark
+Terminal=false
+Categories=Office;
+StartupWMClass=plainmark
+MimeType=text/markdown;

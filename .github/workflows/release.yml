@@ -47,7 +47,7 @@ jobs:
           workspaces: src-tauri -> target
           key: ${{ matrix.target }}
       - if: runner.os == 'Linux'
-        run: sudo apt-get update && sudo apt-get install -y libwebkit2gtk-4.1-dev libayatana-appindicator3-dev librsvg2-dev patchelf
+        run: sudo apt-get update && sudo apt-get install -y libwebkit2gtk-4.1-dev libayatana-appindicator3-dev librsvg2-dev patchelf desktop-file-utils shared-mime-info libglib2.0-bin
       - run: pnpm install --frozen-lockfile
       - name: Verify tag and package version
         run: node scripts/check-version.mjs
@@ -67,3 +67,6 @@ jobs:
           prerelease: true
           uploadUpdaterJson: false
           args: --target ${{ matrix.target }} --bundles ${{ matrix.bundles }}
+      - name: Verify packaged Linux Open with integration
+        if: runner.os == 'Linux'
+        run: python3 scripts/check-linux-packages.py src-tauri/target/${{ matrix.target }}/release/bundle

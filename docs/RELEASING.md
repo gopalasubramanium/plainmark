@@ -20,6 +20,8 @@ You can also run the workflow manually against a version tag, using the Actions 
 
 Wait for all build jobs to finish. Inspect the draft assets, try the installers on the supported platforms, and keep unsupported/unverified behavior documented. Publish the draft as a prerelease for an early version. Promote to stable only after platform installation and file-dialog smoke tests pass.
 
+The Linux build also extracts the actual `.deb` and AppImage, validates their desktop entries and MIME declarations, and launches each entry through GIO with several Markdown files. A capture executable verifies that spaces, Unicode, and all selected paths survive the Open with handoff. To repeat this check on Linux, install `desktop-file-utils`, `shared-mime-info`, and `libglib2.0-bin`, then run `python3 scripts/check-linux-packages.py src-tauri/target/release/bundle` (add the target triple to the path for cross-target builds).
+
 GitHub’s source archives for the version tag provide the matching source alongside binaries. The app bundles the project license and generated third-party notices. To generate notices independently:
 
 ```sh
