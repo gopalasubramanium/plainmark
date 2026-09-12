@@ -10,6 +10,9 @@ permissions:
   contents: write
   id-token: write
   attestations: write
+concurrency:
+  group: release-refs/tags/${{ inputs.tag }}
+  cancel-in-progress: false
 jobs:
   sign:
     environment: release-signing
@@ -75,6 +78,55 @@ jobs:
           EXPECTED_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
           BUNDLE_PATH: src-tauri/target/${{ matrix.target }}/release/bundle/macos/Plainmark.app
         run: python3 scripts/verify-macos-signature.py
+      - name: Notarize the disk image and verify its download trust
+        env:
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_PASSWORD: ${{ secrets.APPLE_PASSWORD }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TARGET: ${{ matrix.target }}
+          RELEASE_TAG: ${{ inputs.tag }}
+        run: |
+          python3 - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+          import subprocess
+
+          target = os.environ['TARGET']
+          arch = {'aarch64-apple-darwin': 'aarch64', 'x86_64-apple-darwin': 'x64'}[target]
+          version = json.loads(Path('package.json').read_text())['version']
+          dmg = Path('src-tauri/target') / target / 'release/bundle/dmg' / f'Plainmark_{version}_{arch}.dmg'
+          if not dmg.is_file():
+              raise SystemExit('The expected disk image is missing.')
+          subprocess.run(['codesign', '--verify', '--strict', str(dmg)], check=True)
+          details = subprocess.run(['codesign', '-d', '--verbose=4', str(dmg)], check=True, capture_output=True, text=True).stderr
+          if f"TeamIdentifier={os.environ['APPLE_TEAM_ID']}\n" not in details or 'Authority=Developer ID Application:' not in details:
+              raise SystemExit('The disk image does not have the expected Developer ID signature.')
+
+          # Never let a credential-bearing command appear in an exception traceback.
+          submission = subprocess.run([
+              'xcrun', 'notarytool', 'submit', str(dmg),
+              '--apple-id', os.environ['APPLE_ID'],
+              '--password', os.environ['APPLE_PASSWORD'],
+              '--team-id', os.environ['APPLE_TEAM_ID'],
+              '--wait', '--output-format', 'json',
+          ], capture_output=True, text=True)
+          if submission.returncode:
+              raise SystemExit('Disk-image notarization failed. Credential-bearing command output was suppressed.')
+          result = json.loads(submission.stdout)
+          if result.get('status') != 'Accepted':
+              raise SystemExit('Apple did not accept the disk image for notarization.')
+          print('Apple accepted the disk image. Submission:', result['id'])
+          subprocess.run(['xcrun', 'stapler', 'staple', str(dmg)], check=True)
+          subprocess.run(['xcrun', 'stapler', 'validate', str(dmg)], check=True)
+          subprocess.run(['spctl', '--assess', '--type', 'open', '--context', 'context:primary-signature', '--verbose=2', str(dmg)], check=True)
+          release = json.loads(subprocess.check_output(['gh', 'release', 'view', os.environ['RELEASE_TAG'], '--json', 'isDraft']))
+          if not release['isDraft']:
+              raise SystemExit('Refusing to replace a disk image in a public release.')
+          subprocess.run(['gh', 'release', 'upload', os.environ['RELEASE_TAG'], str(dmg), '--clobber'], check=True)
+          print('Published the verified disk image to the unpublished draft.')
+          PY
       - id: checksums
         run: python3 scripts/release-checksums.py src-tauri/target/${{ matrix.target }}/release/bundle ${{ matrix.target }}
       - uses: actions/attest-build-provenance@977bb373ede98d70efdf65b84cb5f73e068dcc2a # v3
