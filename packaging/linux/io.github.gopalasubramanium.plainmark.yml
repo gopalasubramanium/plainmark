@@ -25,7 +25,9 @@ modules:
     build-commands:
       - chmod +x flatpak-pnpm/bin/pnpm.cjs
       - mkdir -p flatpak-bin && ln -s ../flatpak-pnpm/bin/pnpm.cjs flatpak-bin/pnpm
-      - pnpm install --offline --frozen-lockfile --ignore-scripts
+      # CI checks the unchanged lockfile's registry policy before this offline
+      # build. Flatpak independently verifies every vendored archive's digest.
+      - pnpm install --offline --frozen-lockfile --ignore-scripts --config.trust-lockfile=true
       - cargo test --offline --locked --manifest-path src-tauri/Cargo.toml
       - pnpm tauri build --no-bundle --config packaging/linux/tauri.flatpak.conf.json
       - install -Dm755 src-tauri/target/release/plainmark /app/bin/plainmark
