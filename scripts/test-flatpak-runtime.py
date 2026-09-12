@@ -11,10 +11,11 @@ if os.environ.get("GITHUB_ACTIONS") != "true" or os.environ.get("RUNNER_ENVIRONM
 
 import gi
 gi.require_version("Gdk", "3.0")
-from gi.repository import Gdk
+from gi.repository import Gdk, GLib
 import pyatspi
 
 APP = "io.github.gopalasubramanium.plainmark"
+pyatspi.Registry.registerEventListener(lambda event: None, "object:children-changed", "object:state-changed")
 
 # A minimal Xvfb session has no desktop accessibility settings daemon. Enable
 # the same AT-SPI status a screen reader requests before WebKit is launched.
@@ -34,6 +35,7 @@ def snapshot():
             return
         remaining -= 1
         try:
+            node.clearCache()
             result.append(f"{'  ' * depth}{node.getRoleName()}: {node.name}")
             try:
                 text = node.queryText()
@@ -60,6 +62,9 @@ with tempfile.TemporaryDirectory(prefix="plainmark-portal-test-") as directory:
         try:
             deadline = time.monotonic() + 70
             while time.monotonic() < deadline:
+                context = GLib.MainContext.default()
+                while context.pending():
+                    context.iteration(False)
                 state = snapshot()
                 Path("flatpak-accessibility.txt").write_text(state, encoding="utf-8")
                 if marker in state and "portal-note.md" in state and "Open a file" in state:
