@@ -16,6 +16,14 @@ import pyatspi
 
 APP = "io.github.gopalasubramanium.plainmark"
 
+# A minimal Xvfb session has no desktop accessibility settings daemon. Enable
+# the same AT-SPI status a screen reader requests before WebKit is launched.
+for status in ("IsEnabled", "ScreenReaderEnabled"):
+    subprocess.run(["gdbus", "call", "--session", "--dest", "org.a11y.Bus",
+                    "--object-path", "/org/a11y/bus", "--method",
+                    "org.freedesktop.DBus.Properties.Set", "org.a11y.Status",
+                    status, "<true>"], check=True)
+
 
 def snapshot():
     result = []
