@@ -2,7 +2,7 @@
 
 Plainmark should earn adoption by making ordinary documents dependable: open a file without setup, edit without losing its meaning, find related notes, include pictures, and share a readable result. Everyday writing and technical documentation deserve equal priority. A pleasant visual editor helps both groups, but reliable saves, predictable Markdown, private defaults and straightforward installation matter more than a long feature list.
 
-This assessment covers public evidence available on 12 September 2026 and the Plainmark 0.3.0 development changes. It identifies recurring failure classes and explains the resulting product decisions. It does not claim to measure the percentage of Markdown users affected or establish a statistically representative ranking. Public issue trackers overrepresent problems, forum threads can include promotion, and developers are more visible in these sources than occasional document users. Historical and closed issues are used as regression examples, not evidence that a competing product remains broken today.
+This assessment covers public evidence available on 12 September 2026 and the Plainmark 0.3 development changes (0.3.1 release candidate). It identifies recurring failure classes and explains the resulting product decisions. It does not claim to measure the percentage of Markdown users affected or establish a statistically representative ranking. Public issue trackers overrepresent problems, forum threads can include promotion, and developers are more visible in these sources than occasional document users. Historical and closed issues are used as regression examples, not evidence that a competing product remains broken today.
 
 ## Evidence and priorities
 
@@ -143,6 +143,8 @@ OS defaults must remain a user choice through the platform's normal Open with or
 ## Implementation and verification record
 
 The research has produced working changes, not only a feature wishlist. Existing 0.2.2 functionality includes folder workspaces, tabs, visual editing, local Mermaid/math/SVG, explicit HTML execution, block synchronization and Open with integration. The 0.3.0 changes add creator credit, privacy choices, local document-link navigation, Quick Open, image insertion, task-paste preservation, print/PDF preparation, compatibility safeguards, dependency fixes and release-verification preparation.
+
+The initial Linux browser run caught an invalid CRC in a PNG test fixture that macOS tolerated; the fixture was replaced with a checksum-valid PNG, without weakening image validation.
 
 The packaged Mac app was also checked manually: native file selection, local note links, image insertion and saving, MathML, explicit HTML execution and stopping on tab changes, and the system print preview with its Save as PDF option. Browser and native printing needed different platform paths; the final app uses the native print operation. A physical printer and every other OS print destination were not tested.
 

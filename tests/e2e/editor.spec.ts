@@ -213,7 +213,7 @@ test('Quick Open finds nested notes by path and local links reuse unsaved tabs',
 test('image insertion, keyboard editing and undo keep the Markdown portable', async ({ page }) => {
   await page.getByRole('button',{name:'New tab',exact:true}).click();
   await page.locator('.format-tools .insert-menu summary').click(); const chooser=page.waitForEvent('filechooser'); await page.getByRole('button',{name:'Image from file…',exact:true}).click();
-  await (await chooser).setFiles({name:'pixel.png',mimeType:'image/png',buffer:Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aN3cAAAAASUVORK5CYII=','base64')});
+  await (await chooser).setFiles(path.resolve('tests/e2e/fixtures/pixel.png'));
   await expect(page.locator('.visual-document img[alt="pixel"]')).toBeVisible();
   await page.getByRole('button',{name:'Edit image',exact:true}).focus(); await page.keyboard.press('Enter');
   await expect(page.getByRole('dialog',{name:'Image path or data URL'})).toBeVisible();
