@@ -21,7 +21,9 @@ jobs:
           flatpak remote-add --user --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
           flatpak install --user --noninteractive flathub org.gnome.Sdk//50 org.gnome.Platform//50 org.freedesktop.Sdk.Extension.rust-stable//25.08 org.freedesktop.Sdk.Extension.node24//25.08
       - name: Build completely offline inside the sandbox
-        run: flatpak-builder --user --force-clean --sandbox --repo=flatpak-repo flatpak-build packaging/linux/io.github.gopalasubramanium.plainmark.yml
+        run: |
+          git archive --format=tar --output=packaging/linux/plainmark-source.tar HEAD
+          flatpak-builder --user --force-clean --sandbox --repo=flatpak-repo flatpak-build packaging/linux/io.github.gopalasubramanium.plainmark.yml
       - name: Validate desktop integration and permissions
         run: |
           desktop-file-validate flatpak-build/files/share/applications/io.github.gopalasubramanium.plainmark.desktop

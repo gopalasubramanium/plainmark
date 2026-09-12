@@ -18,10 +18,11 @@ Remove generated source entries whose `dest` starts with `flatpak-node/cache/ms-
 For local development on Linux, install the runtimes/extensions from Flathub and run:
 
 ```sh
+git archive --format=tar --output=packaging/linux/plainmark-source.tar HEAD
 flatpak-builder --user --force-clean --sandbox --repo=flatpak-repo flatpak-build packaging/linux/io.github.gopalasubramanium.plainmark.yml
 ```
 
-Before a human maintainer submits to Flathub, replace the local directory source with the exact stable upstream tag and commit, regenerate dependency manifests from that release, validate using current Flathub lint tooling, and provide genuine Linux screenshots. GNOME 50 is the current stable runtime assessed on 12 September 2026; recheck it at submission time.
+Before a human maintainer submits to Flathub, replace the local source archive with the exact stable upstream tag and commit, regenerate dependency manifests from that release, validate using current Flathub lint tooling, and provide genuine Linux screenshots. GNOME 50 is the current stable runtime assessed on 12 September 2026; recheck it at submission time.
 
 The current public release remains the v0.3.3 preview. Flathub accepts stable new submissions only, generally expects meaningful project history and real-world use, and requires a human to write and submit the PR and review interactions with disclosure of affected AI-assisted code/documentation/packaging and approximate extent. This directory contains packaging work, not Flathub submission text. See [current requirements](https://docs.flathub.org/docs/for-app-authors/requirements).
 

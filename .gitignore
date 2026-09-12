@@ -17,3 +17,4 @@ flatpak-build/
 flatpak-repo/
 store-package/
 src-tauri/app-store.provisionprofile
+packaging/linux/plainmark-source.tar
