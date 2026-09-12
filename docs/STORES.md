@@ -1,6 +1,6 @@
 # Store distribution readiness
 
-Assessed 12 September 2026 against Plainmark v0.3.3 and the current repository. Apple has a draft listing; Microsoft now confirms the completed submission is in certification. Neither store has approved or published Plainmark; see the separate [distribution status](DISTRIBUTION-STATUS.md) for exact account gates and the published Homebrew channel. Official editions should remain free, with no ads, paid features, accounts in the app, or telemetry. GitHub downloads remain a useful independent distribution channel.
+Updated 13 September 2026 against the public v0.3.3 preview and 0.4.0 Store candidates. Apple confirms Waiting for Review; Microsoft confirms In certification. Neither store has approved or published Plainmark; see the separate [distribution status](DISTRIBUTION-STATUS.md) for exact submission evidence and the published Homebrew channel. Official editions should remain free, with no ads, paid features, accounts in the app, or telemetry. GitHub downloads remain a useful independent distribution channel.
 
 ## Microsoft Store: first priority
 
@@ -13,6 +13,8 @@ Plainmark now has a registered MSIX identity, manifest and dedicated Windows pac
 Pricing is zero in all selected markets, age ratings are complete after the publisher's explicit IARC agreement, and runFullTrust is explained as the ordinary Win32 desktop host. Microsoft must approve that capability and certify the package. FullTrust does not mean administrator privileges. The tested package and completed listing have been submitted; Partner Center confirms In certification with automatic publication after approval. The candidate has not been Microsoft-signed yet. Default-app association choice, multi-file activation, folders, printing, upgrades, screen-reader usability and a machine missing WebView2 remain separate test coverage gaps. State those limits accurately.
 
 ## Mac App Store: separate build and review
+
+Version/build 0.4.0 was delivered through Transporter and submitted for review on 13 September 2026 at 00:57 Singapore time. App Store Connect reports Waiting for Review for submission `2e5cbcc0-112c-4948-bf50-5d528fd2e9a7`. Free pricing and automatic release after approval are selected. See [the package and validation record](../packaging/macos/README.md).
 
 The active Apple membership covers the account prerequisite. Existing Developer ID-signed and notarized DMGs are for direct distribution; they are not Mac App Store submissions. The Store edition needs its own signing/provisioning configuration, sandbox entitlements, signed submission package, App Store Connect record and review. [Tauri App Store packaging](https://v2.tauri.app/distribute/app-store/).
 

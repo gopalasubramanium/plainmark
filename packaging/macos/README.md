@@ -1,4 +1,4 @@
-# Mac App Store preparation
+# Mac App Store submission
 
 Created in App Store Connect on 12 September 2026:
 
@@ -7,7 +7,8 @@ Created in App Store Connect on 12 September 2026:
 - Bundle ID: `io.github.gopalasubramanium.plainmark`.
 - Team: `TF2VBZ3XH7`.
 - SKU: `plainmark-macos`.
-- Draft version: `0.4.0`.
+- Submitted version/build: `0.4.0` / `0.4.0`.
+- Submission: `2e5cbcc0-112c-4948-bf50-5d528fd2e9a7`, **Waiting for Review**, submitted 13 September 2026 at 00:57 Singapore time. Automatic release after approval is selected.
 - Primary category: Productivity; English (U.S.).
 - Account holder explicitly declared non-trader for all apps; Apple accepted the DSA declaration. Plainmark's app page shows non-trader.
 - Version listing text, support/marketing links and private review contact saved. Do not commit private review contact details to the repository.
@@ -24,7 +25,9 @@ The Store certificates were issued and installed in the publisher's login Keycha
 - `3rd Party Mac Developer Installer: Gopala Subramanium (TF2VBZ3XH7)`, certificate `Z45SCR4535`.
 - Mac App Store profile `Plainmark Mac App Store 2026`, profile `62TWP9XUWK`, UUID `4531a86b-f88e-433f-95e4-26196d4a0e10`, staged at the ignored `src-tauri/app-store.provisionprofile` path.
 
-A universal 0.4.0 candidate was built with the App Store configuration and packaged with `productbuild`. Both Intel and Apple Silicon slices, strict app signature, sandbox entitlements, embedded profile and installer certificate chain verified locally. Installer SHA-256: `8d3ee278022f036fa53c8be696c2c43326622ece2797bde63c106032c63647aa` (6,959,184 bytes). The candidate was re-signed and re-packaged after adding the tested printing entitlement; strict app verification, final entitlements and installer chain passed. This is a local, unsubmitted candidate. Store credentials were not exported to GitHub and do not overwrite the existing direct-release signing secrets. No private keys or credentials belong in this repository.
+A universal 0.4.0 package was built from `6db84b65e92127bdba182c83576612a89ec0dc24` with the App Store configuration and packaged with `productbuild`. Both Intel and Apple Silicon slices, strict app signature, sandbox/printing entitlements, embedded profile, approved license permission, encryption declaration and installer certificate chain verified locally. Submitted installer SHA-256: `10fea1569784df82a3b98eddc18d19bd72b443969d04cfce28ffcfa6490753d9` (6,962,605 bytes). Transporter confirmed delivery at 00:42 Singapore time on 13 September; App Store Connect marked upload processing Complete and the build Ready to Submit. The completed listing was then submitted and is Waiting for Review. Earlier local candidates without the final license permission were not uploaded. Store credentials were not exported to GitHub and do not overwrite the existing direct-release signing secrets. No private keys or credentials belong in this repository.
+
+The submitted screenshot shows the actual native Mac visual editor with a selected folder and two local document tabs, captured from an isolated sandbox build of the submitted source. Its original 2,784 × 1,770 pixels were preserved inside a white 2,880 × 1,800 canvas after the publisher approved standard local image formatting. The screenshot was not generated or altered by AI. Apple accepted it for the listing. Mermaid and math rendering were also visibly verified in that build. The Store-signed package could not be launched directly before Store distribution (launch error 163); do not confuse the ad-hoc sandbox test with installing the Store-delivered edition.
 
 Free pricing and availability in all 175 supported territories are saved.
 
