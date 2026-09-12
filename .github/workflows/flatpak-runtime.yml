@@ -27,8 +27,13 @@ jobs:
           sha256sum candidate/*.flatpak > package-sha256.txt
       - name: Install the application and test desktop
         run: |
+          # WebKit's nested accessibility tree needs Flatpak >= 1.15.11.
+          # The Flatpak team's stable PPA supplies this on Ubuntu 24.04 CI.
+          sudo add-apt-repository --yes ppa:flatpak/stable
           sudo apt-get update
           sudo apt-get install -y flatpak xvfb dbus-x11 xdg-desktop-portal-gtk python3-pyatspi gir1.2-gtk-3.0
+          flatpak --version
+          dpkg --compare-versions "$(dpkg-query -W -f='${Version}' flatpak)" ge 1.16
           flatpak remote-add --user --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
           flatpak install --user --noninteractive flathub org.gnome.Platform//50
           flatpak install --user --noninteractive candidate/*.flatpak
