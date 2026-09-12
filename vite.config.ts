@@ -7,6 +7,9 @@ function htmlPreview(middlewares: Connect.Server) {
   let token = '', html = '';
   middlewares.use('/__plainmark_preview', (req, res) => {
     res.setHeader('Cache-Control', 'no-store');
+    res.setHeader('X-Content-Type-Options', 'nosniff');
+    res.setHeader('Referrer-Policy', 'no-referrer');
+    res.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=(), clipboard-read=(), clipboard-write=(), display-capture=(), payment=(), usb=()');
     if (req.method === 'POST' && req.headers['x-plainmark-preview'] === '1' && req.headers.origin === `http://${req.headers.host}`) {
       const chunks: Buffer[] = []; let bytes = 0;
       req.on('data', chunk => { bytes += chunk.length; if (bytes <= 512 * 1024) chunks.push(chunk); });

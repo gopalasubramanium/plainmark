@@ -33,3 +33,13 @@ The browser development preview supports folder images through a chosen folder. 
 ## Bundled layout engine
 
 Mermaid’s ELK dependency is pinned to 0.12.0, which explicitly adds GPL-3.0-or-later as a secondary license. The normal install and bundle notice checks enforce this choice. See the [upstream licensing change](https://github.com/kieler/elkjs/issues/373).
+
+## Everyday workflows in 0.3.0
+
+- **Quick Open:** Cmd/Ctrl+P searches names and paths in open tabs and explicitly opened folders. It stops when closed and reports partial results if its limits are reached.
+- **Note links:** relative links to Markdown, text and HTML open inside Plainmark. Use Cmd/Ctrl-click or Cmd/Ctrl+Enter in Visual view; a normal click works in Read view. Existing tabs retain unsaved edits. Heading fragments work, including Unicode headings.
+- **Images:** paste a screenshot or choose Insert → Image from file. The desktop app uses a native picker and keeps attachments in an `assets` folder beside your saved Markdown document. Keep that folder with the note. SVG previews continue to work through local paths. Double-click an image, or focus it and press Enter, to edit its path.
+- **Print / PDF:** the export menu offers the system print dialog. It produces static document content without app controls or credits. A PDF destination depends on the OS print service.
+- **Privacy:** A little help → Privacy settings lets you disable and clear local recovery, opt into system spelling suggestions, or disable Run HTML. All defaults and storage behavior are described in [PRIVACY.md](../PRIVACY.md).
+
+Reference definitions, footnotes and wiki links remain in Source view to preserve their syntax. Standard reference links render in preview; specialist footnotes and wiki-link rendering are not implemented. This avoids silent conversion of syntax outside the visual editor's supported model.

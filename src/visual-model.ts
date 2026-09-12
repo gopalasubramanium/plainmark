@@ -4,7 +4,7 @@ import { tableNodes } from 'prosemirror-tables';
 import { createMarkdown } from './syntax';
 
 const nodes = basic.spec.nodes.update('heading', { ...basic.spec.nodes.get('heading')!, content: 'inline*' })
-  .update('list_item', { ...basic.spec.nodes.get('list_item')!, attrs: { checked: { default: null } }, toDOM: node => ['li', node.attrs.checked === null ? {} : { 'data-task-checked': String(node.attrs.checked) }, 0] })
+  .update('list_item', { ...basic.spec.nodes.get('list_item')!, attrs: { checked: { default: null } }, parseDOM: [{ tag: 'li', getAttrs: dom => { const item = dom as HTMLElement, checkbox = item.querySelector<HTMLInputElement>(':scope > input[type="checkbox"], :scope > p > input[type="checkbox"]'); return { checked: item.hasAttribute('data-task-checked') ? item.dataset.taskChecked === 'true' : checkbox ? checkbox.checked : null }; } }], toDOM: node => ['li', node.attrs.checked === null ? {} : { 'data-task-checked': String(node.attrs.checked) }, 0] })
   .append(tableNodes({ tableGroup: 'block', cellContent: 'paragraph+', cellAttributes: { align: { default: null, getFromDOM: dom => dom.style.textAlign || null, setDOMAttr: (value, attrs) => { if (value) attrs.style = `text-align:${value}`; } } } }))
   .append({
     rich_block: { group: 'block', atom: true, draggable: true, attrs: { kind: { default: 'mermaid' }, source: { default: '' } }, toDOM: node => ['figure', { 'data-rich-kind': node.attrs.kind }, node.attrs.source] },

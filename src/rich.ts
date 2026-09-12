@@ -3,6 +3,7 @@ import { invoke } from '@tauri-apps/api/core';
 import { native, type DocumentFile } from './files';
 import { escapeHtml, type Rendered, type RichBlock } from './markdown';
 import { safeImageData, svgDataUrl } from './safe-images';
+import { preferences } from './preferences';
 
 const cache = new Map<string, Promise<string>>();
 let cacheBytes = 0, diagramId = 0;
@@ -39,6 +40,7 @@ export function stopHtml() {
   if (native) void invoke('stop_html_preview').catch(() => undefined);
 }
 export async function runHtml(host: HTMLElement, source: string) {
+  if (!preferences.html) throw new Error('HTML execution is disabled in Privacy settings.');
   stopHtml(); const generation = frameGeneration;
   if (source.length > 512 * 1024) throw new Error('Executable HTML is limited to 512 KB.');
   const html = `<!doctype html><html><head><meta charset="utf-8"><meta http-equiv="Content-Security-Policy" content="${policy}"><style>body{font:16px/1.6 system-ui;margin:16px}*{box-sizing:border-box}</style></head><body>${source}</body></html>`;
@@ -48,7 +50,7 @@ export async function runHtml(host: HTMLElement, source: string) {
     return (await response.json() as {url:string}).url;
   })();
   if (generation !== frameGeneration || !host.isConnected) return;
-  const iframe = document.createElement('iframe'); iframe.sandbox.add('allow-scripts'); iframe.referrerPolicy = 'no-referrer'; iframe.title = 'Isolated HTML preview'; iframe.className = 'html-runner';
+  const iframe = document.createElement('iframe'); iframe.sandbox.add('allow-scripts'); iframe.referrerPolicy = 'no-referrer'; iframe.allow = "camera 'none'; microphone 'none'; geolocation 'none'; clipboard-read 'none'; clipboard-write 'none'; display-capture 'none'; payment 'none'; usb 'none'"; iframe.title = 'Isolated HTML preview'; iframe.className = 'html-runner';
   iframe.src = url;
   const stop = document.createElement('button'); stop.dataset.stopHtml = ''; stop.textContent = 'Stop HTML'; stop.onclick = stopHtml;
   host.append(stop, iframe); frame = iframe;
@@ -67,6 +69,8 @@ export function enhance(root: HTMLElement, result: Rendered, file: DocumentFile,
         const staticPreview = document.createElement('div'); staticPreview.className = 'static-html'; staticPreview.innerHTML = html;
         element.replaceChildren(staticPreview);
         const run = document.createElement('button'); run.textContent = 'Run HTML'; run.type = 'button'; run.title = 'Run scripts in an isolated preview. Only run code you trust.'; run.dataset.runHtml = String(block.index);
+        run.disabled = !preferences.html;
+        if (run.disabled) run.title = 'HTML execution is disabled in Privacy settings.';
         run.onclick = () => void runHtml(element, block.source).catch(error => { run.textContent = String(error); });
         const code = document.createElement('details'); const summary = document.createElement('summary'); summary.textContent = 'HTML source'; const pre = document.createElement('pre'); pre.textContent = block.source; code.append(summary, pre);
         element.append(run, code);

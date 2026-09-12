@@ -2,6 +2,31 @@
   "$schema": "../gen/schemas/desktop-schema.json",
   "identifier": "main-window",
   "description": "Local window events and closing. Files are selected by Rust-owned dialogs; no unrestricted filesystem or shell access.",
-  "windows": ["main"],
-  "permissions": ["core:default", "core:window:allow-close"]
+  "windows": [
+    "main"
+  ],
+  "permissions": [
+    "allow-import-image",
+    "allow-pick-image",
+    "allow-print-document",
+    "core:event:allow-listen",
+    "core:event:allow-unlisten",
+    "core:window:allow-close",
+    "allow-open-document",
+    "allow-open-workspace",
+    "allow-list-folder",
+    "allow-open-workspace-file",
+    "allow-close-workspace",
+    "allow-close-document",
+    "allow-take-open-documents",
+    "allow-save-document",
+    "allow-save-document-as",
+    "allow-read-image",
+    "allow-export-html",
+    "allow-open-external",
+    "allow-create-html-preview",
+    "allow-stop-html-preview",
+    "allow-quit",
+    "allow-open-linked-document"
+  ]
 }

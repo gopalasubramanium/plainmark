@@ -1,6 +1,7 @@
 import DOMPurify from 'dompurify';
 import { createMarkdown } from './syntax';
 import { localImagePath, safeImageData } from './safe-images';
+import { headingSlugs } from './document-links';
 export interface Heading { id: string; text: string; level: number; line: number }
 export interface LocalImage { index: number; path: string; alt: string }
 export interface RichBlock { index: number; kind: 'mermaid' | 'math' | 'html'; source: string; display?: boolean }
@@ -24,6 +25,11 @@ export function renderMarkdown(source: string, htmlDocument = false): Rendered {
     }
   }
   const mapped = (token: typeof tokens[number], html: string) => `<div data-source-line="${(token.map?.[0] ?? 0) + 1}" data-source-end="${(token.map?.[1] ?? 0) + 1}">${html}</div>`;
+  const slugs = headingSlugs(headings);
+  for (const token of tokens) for (const child of token.children ?? []) {
+    const href = child.type === 'link_open' ? String(child.attrGet('href') ?? '') : null;
+    if (href?.startsWith('#')) { try { const index = slugs.indexOf(decodeURIComponent(href.slice(1))); if (index >= 0) child.attrSet('href', `#${headings[index].id}`); } catch {} }
+  }
   md.renderer.rules.image = (ts, i) => {
     const t = ts[i], src = String(t.attrGet('src') ?? ''), path = localImagePath(src);
     if (src.startsWith('data:')) { try { return `<img src="${escapeHtml(safeImageData(src))}" alt="${escapeHtml(t.content)}">`; } catch { return '<span class="image-placeholder">Image unavailable</span>'; } }

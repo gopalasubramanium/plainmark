@@ -1,2 +1,3 @@
 # Preserve upstream license text; keep generated notices out of code review statistics.
 src-tauri/resources/*.txt linguist-generated=true -whitespace
+src-tauri/vendor/glib/** linguist-vendored=true

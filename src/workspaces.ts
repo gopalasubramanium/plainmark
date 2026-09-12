@@ -1,5 +1,6 @@
 import { invoke } from '@tauri-apps/api/core';
 import { native, readBrowserFile, type BrowserFileHandle, type DocumentFile } from './files';
+import { relativeDocumentPath } from './document-links';
 export interface DirectoryHandle { name: string; kind: 'directory'; values(): AsyncIterable<DirectoryHandle | (BrowserFileHandle & { kind: 'file' })>; getDirectoryHandle(name: string): Promise<DirectoryHandle>; getFileHandle(name: string): Promise<BrowserFileHandle> }
 export interface FolderWorkspace { id: number; name: string; handle?: DirectoryHandle; files?: Map<string, File> }
 export interface FolderEntry { name: string; path: string; directory: boolean }
@@ -53,6 +54,12 @@ export async function openWorkspaceDocument(folder: FolderWorkspace, path: strin
   if (native) return { ...await invoke<DocumentFile>('open_workspace_file', { id: folder.id, path }), workspaceId: folder.id, relativePath: path };
   const { file, handle } = await browserWorkspaceFile(folder, path);
   return { ...await readBrowserFile(file, handle), workspaceId: folder.id, relativePath: path };
+}
+export async function openLinkedDocument(file: DocumentFile, path: string): Promise<DocumentFile> {
+  if (native && file.id !== undefined) return invoke('open_linked_document', { id: file.id, path });
+  const folder = folders.get(file.workspaceId!);
+  if (!folder || !file.relativePath) throw new Error('Open the containing folder to follow local document links.');
+  return openWorkspaceDocument(folder, relativeDocumentPath(file.relativePath, path));
 }
 export async function closeFolder(id: number) { if (native) await invoke('close_workspace', { id }); folders.delete(id); clearImageCache(); }
 export function clearImageCache() { imageCache.clear(); imageBytes = 0; }

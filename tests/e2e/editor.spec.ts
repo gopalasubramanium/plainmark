@@ -91,7 +91,7 @@ test('tasks and tables edit as document content and serialize correctly', async 
   await open(page,'- [ ] Complete me\n\n| Name | State |\n| --- | --- |\n| Initial | Draft |\n');
   await page.getByRole('checkbox',{name:'Task complete'}).click();
   const cell=page.locator('.visual-document td').first(); await cell.click(); await page.keyboard.press('Home'); await page.keyboard.insertText('Updated ');
-  await page.locator('.insert-menu summary').click(); await page.getByRole('button',{name:'Add table row',exact:true}).click();
+  await page.locator('.format-tools .insert-menu summary').click(); await page.getByRole('button',{name:'Add table row',exact:true}).click();
   await expect(page.locator('.visual-document tr')).toHaveCount(3);
   await page.getByRole('button',{name:'Source',exact:true}).click();
   await expect(page.getByRole('textbox',{name:'Markdown editor'})).toContainText('[x] Complete me');
@@ -141,7 +141,7 @@ test('hostile Markdown remains inert and exports include no executable content',
   await source(page,'# Export me\n\n**Offline**\n\n<script>window.hacked=true</script>\n\n![tracking](https://example.com/pixel.gif)');
   await expect(page.locator('#preview')).toContainText('Remote image blocked');
   await expect(page.locator('#preview script, #preview [onerror]')).toHaveCount(0);
-  const download=page.waitForEvent('download'); await page.getByRole('button',{name:'Export HTML',exact:true}).click();
+  await page.getByLabel('Export or print').click(); const download=page.waitForEvent('download'); await page.getByRole('button',{name:'Export HTML',exact:true}).click();
   const html=await readFile((await (await download).path())!,'utf8');
   expect(html).toContain('<strong>Offline</strong>'); expect(html).toContain("default-src 'none'"); expect(html).not.toContain('<script>'); expect(html).not.toContain('<iframe');
 });
@@ -174,4 +174,80 @@ test('Mermaid ELK layout renders with the GPL-compatible layout engine', async (
   await source(page,'```mermaid\n---\nconfig:\n  layout: elk\n---\nflowchart LR\n A --> B\n A --> C\n```');
   await expect(page.locator('#preview img.diagram-image')).toBeVisible({timeout:20000});
   expect(requests.some(url=>/elk/i.test(url))).toBe(true);
+});
+
+test('privacy controls clear recovery while preserving open drafts and persist after reload', async ({ page }) => {
+  await page.getByRole('textbox',{name:'Visual editor'}).fill('Private unsaved words');
+  await expect.poll(() => page.evaluate(() => localStorage.getItem('plainmark.recovery.v2'))).toContain('Private unsaved words');
+  await page.getByRole('button',{name:'A little help'}).click();
+  await expect(page.locator('.creator-note')).toContainText('Gopala Subramanium');
+  await page.getByRole('button',{name:'Privacy settings',exact:true}).click();
+  await expect(page.locator('#pref-spellcheck')).not.toBeChecked();
+  await page.locator('#pref-recovery').uncheck(); await page.locator('#pref-html').uncheck();
+  await page.getByRole('button',{name:'Apply',exact:true}).click();
+  await page.getByRole('button',{name:'Turn off and clear copies',exact:true}).click();
+  await expect(page.getByRole('textbox',{name:'Visual editor'})).toContainText('Private unsaved words');
+  await expect.poll(() => page.evaluate(() => localStorage.getItem('plainmark.recovery.v2'))).toBeNull();
+  await source(page,'```html\n<button>Hello</button>\n```');
+  await expect(page.getByRole('button',{name:'Run HTML',exact:true})).toBeDisabled();
+  page.on('dialog', dialog => dialog.accept()); await page.reload();
+  await page.getByRole('button',{name:'A little help'}).click(); await page.getByRole('button',{name:'Privacy settings',exact:true}).click();
+  await expect(page.locator('#pref-recovery')).not.toBeChecked(); await expect(page.locator('#pref-html')).not.toBeChecked();
+});
+
+test('Quick Open finds nested notes by path and local links reuse unsaved tabs', async ({ page }) => {
+  const chooser=page.waitForEvent('filechooser'); await page.getByRole('button',{name:/^Open a folder/}).click(); await (await chooser).setFiles(path.resolve('tests/e2e/fixtures/workspace'));
+  await page.getByRole('button',{name:/^Quick open/}).click();
+  const search = page.getByRole('searchbox',{name:'Find by name or path'}); await search.fill('notes nested');
+  await expect(page.locator('.quick-results button')).toHaveCount(1); await search.press('Enter');
+  await expect(page.locator('#filename')).toHaveText('nested.md');
+  await page.getByRole('textbox',{name:'Visual editor'}).press('ControlOrMeta+End'); await page.keyboard.insertText('Keep my edit');
+  await page.getByRole('button',{name:'start.md',exact:true}).click(); await page.getByRole('button',{name:'Read',exact:true}).click();
+  await page.locator('#preview a').filter({hasText:'Read the next note'}).click();
+  await expect(page.locator('#filename')).toHaveText('nested.md');
+  await expect(page.getByRole('textbox',{name:'Visual editor'})).toContainText('Keep my edit'); await expect(page.getByRole('tab')).toHaveCount(3);
+  await page.getByRole('tab',{name:'start.md',exact:true}).click(); await page.locator('#preview a').filter({hasText:'Leave the folder'}).click();
+  await expect(page.locator('#toast')).toContainText('leaves the selected folder');
+});
+
+test('image insertion, keyboard editing and undo keep the Markdown portable', async ({ page }) => {
+  await page.getByRole('button',{name:'New tab',exact:true}).click();
+  await page.locator('.format-tools .insert-menu summary').click(); const chooser=page.waitForEvent('filechooser'); await page.getByRole('button',{name:'Image from file…',exact:true}).click();
+  await (await chooser).setFiles({name:'pixel.png',mimeType:'image/png',buffer:Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aN3cAAAAASUVORK5CYII=','base64')});
+  await expect(page.locator('.visual-document img[alt="pixel"]')).toBeVisible();
+  await page.getByRole('button',{name:'Edit image',exact:true}).focus(); await page.keyboard.press('Enter');
+  await expect(page.getByRole('dialog',{name:'Image path or data URL'})).toBeVisible();
+  await page.getByRole('button',{name:'Cancel',exact:true}).click();
+  await page.getByRole('button',{name:'Source',exact:true}).click(); await expect(page.getByRole('textbox',{name:'Markdown editor'})).toContainText('![pixel](data:image/png;base64,');
+  await page.getByRole('button',{name:'Visual',exact:true}).click(); await page.getByRole('textbox',{name:'Visual editor'}).press('ControlOrMeta+z');
+  await expect(page.locator('.visual-document img')).toHaveCount(0);
+});
+
+test('HTML clipboard task lists preserve checked states without executing pasted code', async ({ page }) => {
+  await page.getByRole('button',{name:'New tab',exact:true}).click();
+  await page.getByRole('textbox',{name:'Visual editor'}).focus();
+  await page.getByRole('textbox',{name:'Visual editor'}).evaluate(el => { const clipboardData = new DataTransfer(); clipboardData.setData('text/html','<ul><li><input type="checkbox" checked>Finished</li><li><input type="checkbox">Waiting</li></ul><script>window.pastedAttack=1</script>'); el.dispatchEvent(new ClipboardEvent('paste',{clipboardData,bubbles:true,cancelable:true})); });
+  await expect(page.getByRole('checkbox',{name:'Task complete'}).first()).toHaveAttribute('aria-checked','true');
+  await expect(page.getByRole('checkbox',{name:'Task complete'}).nth(1)).toHaveAttribute('aria-checked','false');
+  expect(await page.evaluate(() => 'pastedAttack' in window)).toBe(false);
+});
+
+test('print uses a static document, waits for math, and omits the app and its credits', async ({ page }) => {
+  await source(page,'# Print this\n\n[Jump](#next)\n\nMath $x^2$\n\n## Next\n\n```html\n<script>bad()</script>\n```');
+  await page.evaluate(() => { window.print = () => { const content=document.querySelector('#print-document')!; document.body.dataset.printed=content.innerHTML; window.dispatchEvent(new Event('afterprint')); }; });
+  await page.getByLabel('Export or print').click(); await page.getByRole('button',{name:'Print / Save as PDF',exact:true}).click();
+  await expect.poll(() => page.locator('body').getAttribute('data-printed')).toContain('<math');
+  const printed=(await page.locator('body').getAttribute('data-printed'))!;
+  expect(printed).toContain('href="#section-1"'); expect(printed).not.toMatch(/<script|<iframe|data-action|Gopala Subramanium/);
+  await expect(page.locator('#print-document')).toHaveCount(0);
+});
+
+test('reference-style documents open safely in Source and save without rewriting', async ({ page }) => {
+  const text='[Read][doc]\n\n[doc]: next.md "A title"\n'; await open(page,text,'references.md');
+  await expect(page.getByRole('textbox',{name:'Markdown editor'})).toBeVisible();
+  await expect(page.locator('#toast')).toContainText('reference definitions');
+  await page.getByRole('button',{name:'Visual',exact:true}).click();
+  await expect(page.getByRole('textbox',{name:'Markdown editor'})).toBeVisible();
+  const download = page.waitForEvent('download'); await page.locator('[data-action="save"]').click();
+  expect(await readFile((await (await download).path())!,'utf8')).toBe(text);
 });

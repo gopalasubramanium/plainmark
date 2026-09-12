@@ -9,7 +9,7 @@
 
 **[Visit the Plainmark website](https://markdown.eksaar.com)** · [Download the latest preview release](https://github.com/gopalasubramanium/plainmark/releases) · [Report a bug](https://github.com/gopalasubramanium/plainmark/issues) · [Contribute](CONTRIBUTING.md)
 
-Plainmark is at **0.2.2**, an early preview. Choose the installer for your computer:
+The current source is **0.3.0**, an early preview. See GitHub Releases for the latest published binaries. Choose the installer for your computer:
 
 | Platform | Download | Target |
 | --- | --- | --- |
@@ -25,6 +25,7 @@ The preview installers are **not publisher-signed/notarized**. macOS uses ad-hoc
 ## Your words, without the noise
 
 - **Visual, Source, Split, Read.** Edit the formatted document directly, work with Markdown, or settle into a reading view.
+- **Quick Open and note links.** Find documents by name or path; follow local Markdown links without losing unsaved tabs.
 - **Folder workspaces and tabs.** Browse folders on demand, keep several documents open, and retain each tab’s editing history.
 - **Mermaid and TeX math.** Locally rendered diagrams and native MathML, with no CDN or font downloads.
 - **Runnable HTML.** Explicitly start a block’s scripts in an isolated preview; editing or changing tabs stops it.
@@ -36,12 +37,16 @@ The preview installers are **not publisher-signed/notarized**. macOS uses ad-hoc
 - **A document outline.** Jump straight to the section you need.
 - **Thoughtful safeguards.** Unsaved-change prompts, local crash recovery, atomic saves, and detection of external file edits.
 - **Light and dark themes.** System fonts, balanced spacing, and no external font downloads.
+- **Print and PDF.** Use the system print dialog to share a static document without app controls or creator branding.
 - **Offline HTML export.** Export a self-contained reading copy with any successfully loaded local images embedded.
+- **Paste or insert images.** Add a screenshot directly, or choose Image from file. Desktop attachments stay in an `assets` folder beside your note.
 - **Local images.** PNG, JPEG, GIF, WebP, and sanitized SVG inside the selected workspace or document folder.
 
 Files remain plain UTF-8 Markdown. Existing BOMs and Windows CRLF line endings are preserved on normal saves. New files use UTF-8 and LF. A file containing mixed newline styles is normalized to one style.
 
 ## Free means free
+
+Created by **[Gopala Subramanium](https://me.sgopala.com)**. I made Plainmark because reading and writing Markdown is an everyday task. I wanted a simple tool that stays free, without ads, subscriptions, unnecessary extras, or interruptions. Useful software should leave you free to get on with your day. See [creator and contributor credits](AUTHORS.md).
 
 The official Plainmark project is committed to being free of charge, without ads, telemetry, subscriptions, bundled offers, or premium tiers. There is no server, account system, update service, or runtime dependency on a CDN.
 
@@ -51,7 +56,7 @@ The code is licensed under **GPL-3.0-or-later**. You can use, study, change, and
 
 Opening a document does not send its contents anywhere. Remote Markdown images are represented by placeholders rather than fetched, and HTML receives a sanitized static preview. Scripts run only after **Run HTML** is selected. That frame has an opaque origin, no app or file access, and restrictive content rules. Normal preview output is sanitized. External links open in your browser only when clicked.
 
-While you edit, recovery copies of unsaved tabs are stored in the app’s local webview storage. Each copy is removed when you save or deliberately discard that tab. A recovered draft opens as a copy and must be saved again. Recovery storage is not encrypted; clearing app/browser data removes it. Normal file saves are explicit, not automatic.
+While you edit, recovery copies of unsaved tabs are stored in the app’s local webview storage. Each copy is removed when you save or deliberately discard that tab. A recovered draft opens as a copy and must be saved again. Recovery storage is not encrypted; clearing app/browser data removes it. Normal file saves are explicit, not automatic. Disable and clear recovery copies in **A little help → Privacy settings**. System spelling suggestions default to off; Run HTML can also be disabled. See [the privacy policy](PRIVACY.md) and [security boundaries](SECURITY.md).
 
 The native backend opens files selected through native dialogs, a selected workspace, or the OS “Open with” action. It never recursively scans a workspace at startup. Local image access is confined to the selected workspace or document folder, including symlink checks. If a file changes externally, save a copy under a different name or reopen the newer version. Plainmark does not merge concurrent edits.
 
@@ -84,6 +89,8 @@ Use **Cmd** on macOS and **Ctrl** on Windows/Linux.
 | --- | --- |
 | New / Open / Save | Mod+N / Mod+O / Mod+S |
 | Open folder / Save as / Save all | Mod+Shift+O / Mod+Shift+S / Mod+Alt+S |
+| Quick Open / Print or PDF | Mod+P / Mod+Shift+P |
+| Follow link in Visual | Mod+click or Mod+Enter at a link |
 | Close tab / Next tab | Mod+W / Ctrl+Tab |
 | Bold / Italic / Link | Mod+B / Mod+I / Mod+K |
 | Find and replace | Mod+F |
@@ -100,7 +107,11 @@ The source editor, visual editor, diagrams, and math engines load on demand. Mat
 
 Documents are limited to 5 MB, and files above 1 MB open in Source view to keep editing responsive. Up to 100 tabs can be open. A folder listing allows 2,000 visible entries and scans at most 20,000 directory entries; hidden folders, `node_modules`, and `target` are omitted. Rich rendering is bounded to 500 preview blocks, with 50,000-character diagrams and 20,000-character math expressions. HTML execution is limited to 512 KB.
 
-Visual editing supports CommonMark text formatting, nested lists, tasks, tables, images, frontmatter, math, diagrams, and HTML blocks. Complex blocks have an **Edit** control for their source. Visual edits normalize Markdown formatting (for example, list markers and table spacing); simply switching views preserves the original source. Keep Source view for dialect-specific syntax that Plainmark does not understand. Undo history is retained per tab and editor; editing in one representation resets the other representation’s history.
+Visual editing supports CommonMark text formatting, nested lists, tasks, tables, images, frontmatter, math, diagrams, and HTML blocks. Complex blocks have an **Edit** control for their source. Visual edits normalize Markdown formatting (for example, list markers and table spacing); simply switching views preserves the original source. Documents containing reference definitions, footnotes or wiki links stay in Source view to preserve that syntax. Reference links render in preview; footnote and wiki-link extensions are not implemented. Undo history is retained per tab and editor; editing in one representation resets the other representation’s history.
+
+Quick Open reads names on demand, with limits of 250 folders, 5,000 files and 12 levels; it reports partial results when limits are reached. It does not search file contents or create a persistent index.
+
+See [the research and improvement report](docs/RESEARCH.md) and [trusted distribution preparation](docs/SIGNING.md).
 
 See [the feature guide](docs/FEATURES.md) for examples and boundaries.
 

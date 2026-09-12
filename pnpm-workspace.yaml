@@ -2,3 +2,6 @@
 # https://github.com/kieler/elkjs/issues/373
 overrides:
   'mermaid>elkjs': 0.12.0
+  # Patched template-import validation and prototype pollution protections.
+  # https://github.com/advisories/GHSA-r5fr-rjxr-66jc
+  lodash-es: 4.18.1

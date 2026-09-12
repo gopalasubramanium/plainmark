@@ -6,6 +6,8 @@ on:
 
 permissions:
   contents: write
+  id-token: write
+  attestations: write
 
 jobs:
   checks:
@@ -31,18 +33,19 @@ jobs:
             bundles: appimage,deb
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
         with:
           version: 11.19.0
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: 22
           cache: pnpm
-      - uses: dtolnay/rust-toolchain@stable
+      - uses: dtolnay/rust-toolchain@6bed0761d98439e5a578e2877258200ad565ba87 # stable
         with:
+          toolchain: stable
           targets: ${{ matrix.target }}
-      - uses: Swatinem/rust-cache@v2
+      - uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2
         with:
           workspaces: src-tauri -> target
           key: ${{ matrix.target }}
@@ -51,14 +54,14 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - name: Verify tag and package version
         run: node scripts/check-version.mjs
-      - uses: tauri-apps/tauri-action@v1
+      - uses: tauri-apps/tauri-action@1deb371b0cd8bd54025b384f1cd735e725c4060f # v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tagName: ${{ github.ref_name }}
           releaseName: Plainmark v__VERSION__
           releaseBody: |
-            Visual Markdown editing, folder workspaces, tabs, Mermaid and math, SVG previews, isolated runnable HTML, block scroll synchronization, and native Open with support for Windows, macOS, and Linux.
+            Everyday workflow and privacy update: Quick Open, local note links, paste/insert images, native print/PDF, recovery controls, minimal creator credit, and dependency security fixes. Includes the existing visual editor, folder workspaces, tabs, Mermaid/math/SVG, isolated runnable HTML, block synchronization and Open with integration.
 
             Early preview: publisher signing/notarization and manual installation verification on every supported OS are still pending. macOS packages are ad-hoc signed; Windows packages are unsigned. See README for prerequisites and known limitations.
 
@@ -70,3 +73,17 @@ jobs:
       - name: Verify packaged Linux Open with integration
         if: runner.os == 'Linux'
         run: python3 scripts/check-linux-packages.py src-tauri/target/${{ matrix.target }}/release/bundle
+      - name: Hash downloadable installers
+        id: checksums
+        run: python3 scripts/release-checksums.py src-tauri/target/${{ matrix.target }}/release/bundle ${{ matrix.target }}
+      - name: Attest the source and workflow used to build the installers
+        uses: actions/attest-build-provenance@977bb373ede98d70efdf65b84cb5f73e068dcc2a # v3
+        with:
+          subject-path: ${{ steps.checksums.outputs.artifacts }}
+      - name: Add checksum file to the draft release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RELEASE_TAG: ${{ github.ref_name }}
+          CHECKSUM_FILE: ${{ steps.checksums.outputs.checksum }}
+        run: gh release upload "$RELEASE_TAG" "$CHECKSUM_FILE" --clobber

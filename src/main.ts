@@ -1,11 +1,16 @@
+// Created by Gopala Subramanium — https://me.sgopala.com
+// Everyday Markdown, free of ads, subscriptions, and interruptions. See AUTHORS.md.
 import './style.css';
 import welcome from './welcome.md?raw';
 import { invoke } from '@tauri-apps/api/core';
 import { icon } from './icons';
 import { escapeHtml, exportPage, renderMarkdown, statistics } from './markdown';
 import { native, openFile, saveFile, exportHtml, openExternal, readBrowserFile, MAX_BYTES, type DocumentFile } from './files';
-import { openFolder, listFolder, openWorkspaceDocument, closeFolder, readLocalImage, clearImageCache, type FolderWorkspace } from './workspaces';
+import { openFolder, listFolder, openWorkspaceDocument, openLinkedDocument, closeFolder, readLocalImage, clearImageCache, type FolderWorkspace } from './workspaces';
 import { enhance, stopHtml } from './rich';
+import { documentLink, headingSlugs } from './document-links';
+import { preferences, savePreferences, clearRecovery } from './preferences';
+import { sourceOnlyReason } from './compatibility';
 import type { createEditor, Format } from './editor';
 import type { EditorState as SourceState } from '@codemirror/state';
 import type { EditorState as VisualState } from 'prosemirror-state';
@@ -20,22 +25,23 @@ const app = $('#app');
 const button = (action: string, glyph: string, label: string, shortcut = '') => `<button class="icon-button" data-action="${action}" title="${label}${shortcut ? ` (${shortcut})` : ''}" aria-label="${label}">${icon(glyph)}</button>`;
 app.innerHTML = `
   <aside class="sidebar" aria-label="Document navigation">
-    <div class="brand"><img src="/mark.svg" alt="" width="32" height="32"><span>plainmark<span class="brand-dot">.</span></span><span class="version">0.2</span></div>
+    <div class="brand"><img src="/mark.svg" alt="" width="32" height="32"><span>plainmark<span class="brand-dot">.</span></span><span class="version">0.3</span></div>
     <div class="file-actions">
       <button class="new-button" data-action="new">${icon('plus')}<span>New document</span><kbd>${mod}N</kbd></button>
       <button class="open-button" data-action="open">${icon('file')}<span>Open a file</span><kbd>${mod}O</kbd></button>
       <button class="open-button" data-action="folder">${icon('folder')}<span>Open a folder</span><kbd>${mod}⇧O</kbd></button>
+      <button class="open-button" data-action="quick-open">${icon('search')}<span>Quick open</span><kbd>${mod}P</kbd></button>
     </div>
     <div class="sidebar-scroll"><div class="folder-heading"><div class="sidebar-label">FOLDERS</div>${button('refresh-folders', 'refresh', 'Refresh folders')}</div><div id="folders"><p class="empty-outline">Open a folder to browse your documents.</p></div>
     <div class="outline-label sidebar-label">ON THIS PAGE <span id="heading-count"></span></div><nav id="outline" aria-label="Document outline"></nav></div>
-    <div class="sidebar-bottom"><div class="quiet-promise">${icon('shield')}<div>Your words. Your device.<small>Free. Open source. Always.</small></div></div><div class="sidebar-tools"><button data-action="help">${icon('help')}<span>A little help</span><kbd>?</kbd></button>${button('theme', 'moon', 'Toggle dark mode')}</div></div>
+    <div class="sidebar-bottom"><div class="quiet-promise">${icon('shield')}<div>Your words. Your device.<small>Free. Open source. Always.</small><button class="creator-credit" data-action="creator">Made by Gopala Subramanium</button></div></div><div class="sidebar-tools"><button data-action="help">${icon('help')}<span>A little help</span><kbd>?</kbd></button>${button('theme', 'moon', 'Toggle dark mode')}</div></div>
   </aside>
   <main class="main">
-    <header class="topbar"><div class="document-breadcrumb">${button('sidebar', 'panel', 'Toggle sidebar')}<span class="breadcrumb-label">Documents</span><span class="breadcrumb-divider">/</span><span id="filename"></span><span id="header-dirty" hidden>Edited</span></div><div class="topbar-actions">${button('save-all', 'save', 'Save all tabs')}${button('export', 'export', 'Export HTML')}<button class="save-button" data-action="save">${icon('save')}<span>Save</span><kbd>${mod}S</kbd></button></div></header>
+    <header class="topbar"><div class="document-breadcrumb">${button('sidebar', 'panel', 'Toggle sidebar')}<span class="breadcrumb-label">Documents</span><span class="breadcrumb-divider">/</span><span id="filename"></span><span id="header-dirty" hidden>Edited</span></div><div class="topbar-actions">${button('save-all', 'save', 'Save all tabs')}<details class="insert-menu export-menu"><summary aria-label="Export or print">${icon('export')}</summary><div class="insert-options"><button data-action="export">Export HTML</button><button data-action="print">Print / Save as PDF</button></div></details><button class="save-button" data-action="save">${icon('save')}<span>Save</span><kbd>${mod}S</kbd></button></div></header>
     <div class="tab-strip"><div id="tabs" role="tablist" aria-label="Open documents"></div>${button('new', 'plus', 'New tab')}</div>
     <div class="workspace-toolbar"><div class="view-switch" role="group" aria-label="Editor view"><button data-mode="visual" aria-pressed="true" class="active">${icon('edit')}<span>Visual</span></button><button data-mode="write" aria-pressed="false">${icon('code')}<span>Source</span></button><button data-mode="split" aria-pressed="false">${icon('split')}<span>Split</span></button><button data-mode="read" aria-pressed="false">${icon('read')}<span>Read</span></button></div>
       <div class="format-tools" aria-label="Formatting">${button('format:heading', 'heading', 'Heading')}${button('format:bold', 'bold', 'Bold', `${mod}B`)}${button('format:italic', 'italic', 'Italic', `${mod}I`)}${button('format:link', 'link', 'Insert link', `${mod}K`)}${button('format:list', 'list', 'Bullet list')}
-      <details class="insert-menu"><summary>Insert <span aria-hidden="true">⌄</span></summary><div class="insert-options">${[['paragraph','Paragraph'],['ordered','Numbered list'],['task','Task list'],['quote','Blockquote'],['strike','Strikethrough'],['code','Inline code'],['code-block','Code block'],['image','Image'],['table','Table'],['inline-math','Inline math'],['math','Math block'],['mermaid','Mermaid diagram'],['html','HTML block'],['row-add','Add table row'],['column-add','Add table column'],['row-delete','Remove table row'],['column-delete','Remove table column'],['table-delete','Remove table']].map(([value,label])=>`<button data-action="format:${value}">${label}</button>`).join('')}</div></details></div>
+      <details class="insert-menu"><summary>Insert <span aria-hidden="true">⌄</span></summary><div class="insert-options"><button data-action="insert-image">Image from file…</button>${[['paragraph','Paragraph'],['ordered','Numbered list'],['task','Task list'],['quote','Blockquote'],['strike','Strikethrough'],['code','Inline code'],['code-block','Code block'],['image','Image by path'],['table','Table'],['inline-math','Inline math'],['math','Math block'],['mermaid','Mermaid diagram'],['html','HTML block'],['row-add','Add table row'],['column-add','Add table column'],['row-delete','Remove table row'],['column-delete','Remove table column'],['table-delete','Remove table']].map(([value,label])=>`<button data-action="format:${value}">${label}</button>`).join('')}</div></details></div>
       <div class="utility-tools">${button('find','search','Find and replace',`${mod}F`)}${button('focus','focus','Focus mode',`${mod}Shift+F`)}</div></div>
     <div class="workspace" data-view="visual">
       <section class="visual-pane" aria-label="Visual editing pane"><div class="pane-label"><span>YOUR DOCUMENT</span><span class="pane-note">Markdown underneath. Your words up front.</span></div><div id="visual-scroll"><div id="visual-editor"></div></div></section>
@@ -47,7 +53,8 @@ app.innerHTML = `
   <div id="toast" role="status" aria-live="polite" hidden></div>
   <dialog id="prompt-dialog" aria-labelledby="prompt-title"><h2 id="prompt-title"></h2><p id="prompt-message"></p><div id="prompt-buttons" class="dialog-buttons"></div></dialog>
   <dialog id="edit-dialog" aria-labelledby="edit-title"><form method="dialog"><h2 id="edit-title"></h2><textarea id="edit-value" aria-label="Block source" spellcheck="false" rows="8"></textarea><div class="dialog-buttons"><button value="cancel">Cancel</button><button value="save" class="primary">Apply</button></div></form></dialog>
-  <dialog id="help-dialog" aria-labelledby="help-title"><button class="dialog-close icon-button" aria-label="Close help">${icon('close')}</button><img src="/mark.svg" width="44" height="44" alt=""><p class="eyebrow">A LITTLE HELP</p><h2 id="help-title">Make yourself at home.</h2><p>Open a folder, keep documents in tabs, and write directly in Visual view. Source and Split keep the Markdown available whenever you need it.</p><div class="shortcuts"><span>New / Open / Open folder</span><kbd>${mod}N / O / ⇧O</kbd><span>Save / Save as / Save all</span><kbd>${mod}S / ⇧S / Alt+S</kbd><span>Close tab / Next tab</span><kbd>${mod}W / Ctrl+Tab</kbd><span>Find and replace (source)</span><kbd>${mod}F</kbd><span>Bold / Italic / Link</span><kbd>${mod}B / I / K</kbd><span>Visual / Source / Split / Read</span><kbd>${mod}1 / 2 / 3 / 4</kbd><span>Leave source editor with Tab</span><kbd>Esc, then Tab</kbd></div><div class="help-note"><strong>Local by design</strong><p>Mermaid and TeX math render locally. SVG previews are sanitized images. HTML scripts run only when you choose Run HTML, in an isolated frame without file or app access. Editing or switching tabs stops them.</p><p>Unsaved tabs have local recovery copies. Save to keep permanent files. Visual edits write standard Markdown; switching views alone does not change your document. Large files above 1 MB open in Source view.</p></div><div class="help-footer"><span>Plainmark 0.2.2 · GPL-3.0-or-later</span><button data-action="source">View source ↗</button></div></dialog>`;
+  <dialog id="help-dialog" aria-labelledby="help-title"><button class="dialog-close icon-button" aria-label="Close help">${icon('close')}</button><img src="/mark.svg" width="44" height="44" alt=""><p class="eyebrow">A LITTLE HELP</p><h2 id="help-title">Make yourself at home.</h2><p>Open a folder, keep documents in tabs, and write directly in Visual view. Source and Split keep the Markdown available whenever you need it.</p><div class="shortcuts"><span>New / Open / Open folder</span><kbd>${mod}N / O / ⇧O</kbd><span>Save / Save as / Save all</span><kbd>${mod}S / ⇧S / Alt+S</kbd><span>Close tab / Next tab</span><kbd>${mod}W / Ctrl+Tab</kbd><span>Quick open / Print or PDF</span><kbd>${mod}P / ⇧P</kbd><span>Follow a link (Visual)</span><kbd>${mod}click / ${mod}Enter</kbd><span>Find and replace (source)</span><kbd>${mod}F</kbd><span>Bold / Italic / Link</span><kbd>${mod}B / I / K</kbd><span>Visual / Source / Split / Read</span><kbd>${mod}1 / 2 / 3 / 4</kbd><span>Leave source editor with Tab</span><kbd>Esc, then Tab</kbd></div><div class="help-note"><strong>Local by design</strong><p>Mermaid and TeX math render locally. SVG previews are sanitized images. HTML scripts run only when you choose Run HTML, in an isolated frame without file or app access. Editing or switching tabs stops them.</p><p>Unsaved tabs have local recovery copies. Save to keep permanent files. Visual edits write standard Markdown; switching views alone does not change your document. Large files above 1 MB open in Source view.</p></div><div class="creator-note"><p>Made by <button class="text-button" data-action="creator">Gopala Subramanium</button>.</p><p>I made Plainmark because reading and writing Markdown is an everyday task. I wanted a simple tool that stays free, without ads, subscriptions, unnecessary extras, or interruptions.</p></div><button class="text-button" data-action="privacy">Privacy settings</button><div class="help-footer"><span>Plainmark 0.3.0 · GPL-3.0-or-later</span><button data-action="source">View source ↗</button></div></dialog>
+  <dialog id="privacy-dialog" aria-labelledby="privacy-title"><button class="dialog-close icon-button" aria-label="Close privacy settings">${icon('close')}</button><h2 id="privacy-title">Privacy, on your terms.</h2><p>No accounts, analytics, document uploads, or background update checks.</p><label class="setting"><input id="pref-recovery" type="checkbox"><span>Keep local recovery copies<small>Helps recover unsaved tabs after a crash. Copies are stored on this device, without encryption. Turning this off clears those copies; your open tabs stay intact.</small></span></label><label class="setting"><input id="pref-spellcheck" type="checkbox"><span>Use system spelling suggestions<small>Off by default. Uses your device’s spelling service; that service’s privacy settings apply.</small></span></label><label class="setting"><input id="pref-html" type="checkbox"><span>Allow the Run HTML button<small>Scripts still require a click for each run. Only run code you trust. Turning this off stops the running frame.</small></span></label><div class="dialog-buttons"><button data-action="privacy-apply" class="primary">Apply</button></div></dialog>`;
 
 let nextKey = 0, tabs: Tab[] = [], current: Tab;
 let editor: ReturnType<typeof createEditor> | undefined, visual: VisualEditor | undefined, scrollSync: ReturnType<typeof blockScrollSync> | undefined;
@@ -62,6 +69,7 @@ function htmlFile(tab = current) { return /\.html?$/i.test(tab.file.name); }
 function toast(message: string, error = false) { clearTimeout(toastTimer); const el = $('#toast'); el.textContent = message; el.hidden = false; el.classList.toggle('error', error); toastTimer = setTimeout(() => { el.hidden = true; }, error ? 12_000 : 4500); }
 function saveRecovery() {
   if (restoring) return;
+  if (!preferences.recovery) { try { clearRecovery(); } catch {} return; }
   clearTimeout(draftTimer);
   try {
     const drafts = tabs.filter(dirty).map(tab => ({ name: tab.file.name, text: tab.text, mode: tab.mode }));
@@ -105,7 +113,7 @@ async function ensureSource() {
 }
 async function ensureVisual() {
   if (visual) return;
-  if (!visualLoading) visualLoading = import('./visual-editor').then(({ createVisualEditor }) => { visual = createVisualEditor($('#visual-editor'), current.text, { changed: text => changed(text, 'visual'), edit: editField, file: () => current.file, readImage: readLocalImage }); });
+  if (!visualLoading) visualLoading = import('./visual-editor').then(({ createVisualEditor }) => { visual = createVisualEditor($('#visual-editor'), current.text, { changed: text => changed(text, 'visual'), edit: editField, file: () => current.file, readImage: readLocalImage, openLink: href => void run(() => followLink(href)) }); });
   await visualLoading;
 }
 function changed(value: string, origin: 'source' | 'visual') {
@@ -137,6 +145,7 @@ function render(eager = false) {
 async function setMode(mode: Mode, restore = false) {
   const version = ++modeVersion;
   if (!restore) capture();
+  if (mode === 'visual' && current.text.length <= 1024 * 1024 && !htmlFile()) { const reason = sourceOnlyReason(current.text); if (reason) { mode = 'write'; toast(reason, true); } }
   stopHtml();
   if (mode === 'visual' && (current.text.length > 1024 * 1024 || htmlFile())) { mode = htmlFile() ? 'split' : 'write'; toast(htmlFile() ? 'HTML documents use Source and a runnable preview.' : 'This large document uses Source view to keep editing responsive.'); }
   current.mode = mode; $('.workspace').dataset.view = mode;
@@ -221,6 +230,24 @@ async function sourceFormat(kind: string) {
   if (snippet === undefined) { toast('Use Visual view for table row and column controls.'); return; }
   const range = editor!.view.state.selection.main; editor!.view.dispatch({changes:{from:range.from,to:range.to,insert:snippet}}); editor!.view.focus();
 }
+async function insertImage(file: File) {
+  if (htmlFile()) throw new Error('Insert images in a Markdown document.');
+  const { imageData } = await import('./image-import'); const data = await imageData(file);
+  if (native && current.file.id === undefined && !(await save())) return;
+  let src = data;
+  if (native) src = await invoke<string>('import_image', { id: current.file.id, encoded: data.split(',')[1] });
+  else if (new TextEncoder().encode(current.text + data).length > MAX_BYTES) throw new Error('This image would exceed the document size limit. Use a smaller image or the desktop app.');
+  const alt = file.name.replace(/\.[^.]+$/, '').replace(/[\[\]\\\r\n]/g, ' ').slice(0, 120) || 'Image';
+  if (current.mode === 'read') await setMode('visual');
+  if (current.mode === 'visual') visual!.insertImage(src, alt);
+  else { await ensureSource(); const { from, to } = editor!.view.state.selection.main; editor!.view.dispatch({ changes: { from, to, insert: `![${alt}](${src})` } }); editor!.view.focus(); }
+  toast(native ? 'Image added to the assets folder beside your document. Keep them together when sharing.' : 'Image embedded in this browser document. Save to keep it.');
+}
+app.addEventListener('paste', event => {
+  if (busy || !(event.target as HTMLElement).closest('#visual-editor, #editor')) return;
+  const file = [...(event.clipboardData?.files ?? [])].find(file => file.type.startsWith('image/'));
+  if (file) { event.preventDefault(); event.stopPropagation(); void run(() => insertImage(file)); }
+}, true);
 function dispatch(action: string) {
   if (action === 'undo' || action === 'redo') {
     if (document.activeElement instanceof HTMLTextAreaElement || document.activeElement instanceof HTMLInputElement) { document.execCommand(action); return; }
@@ -230,6 +257,8 @@ function dispatch(action: string) {
   if (action.startsWith('view:')) { void setMode(action.slice(5) as Mode); return; }
   if (action.startsWith('format:')) { const kind = action.slice(7); void run(async () => { if (current.mode === 'read') await setMode('visual'); if (current.mode === 'visual') { visual!.setEditable(true); await visual!.format(kind); } else await sourceFormat(kind); }); return; }
   switch (action) {
+    case 'insert-image': void run(async () => { const { chooseImage } = await import('./image-import'); const file = await chooseImage(); if (file) await insertImage(file); }); break;
+    case 'quick-open': void import('./quick-open').then(({quickOpen}) => quickOpen(tabs.map(tab => ({ name: tab.file.name, path: 'Open tab', open: () => run(() => activate(tab)) })), [...folderRoots.values()].map(({folder}) => folder), (folder, path) => run(async () => { await addDocument(await openWorkspaceDocument(folder, path)); }), error => toast(String(error), true))); break;
     case 'new': void run(() => addDocument({name:'untitled.md',text:''})); break;
     case 'open': void run(async () => { const file = await openFile(); if (file) await addDocument(file); }); break;
     case 'folder': void run(addFolder); break;
@@ -238,20 +267,44 @@ function dispatch(action: string) {
     case 'save': void run(() => save()); break;
     case 'save-as': void run(() => save(true)); break;
     case 'save-all': void run(async () => { for (const tab of tabs.filter(dirty)) if (!(await save(false,tab))) break; }); break;
+    case 'print': void run(async () => { stopHtml(); const rendered = render(true); await rendered.done; const { printDocument } = await import('./printing'); await printDocument(current.file.name, $('#preview').innerHTML); }); break;
     case 'export': void run(async () => { const rendered = render(true); await rendered.done; if (await exportHtml(current.file.name,exportPage(current.file.name,$('#preview').innerHTML))) toast('HTML export saved.'); }); break;
     case 'find': void run(async () => { if (current.mode !== 'split' && current.mode !== 'write') await setMode('write'); editor!.find(); }); break;
     case 'sidebar': app.classList.toggle('sidebar-hidden'); editor?.view.requestMeasure(); break;
     case 'theme': setTheme(document.documentElement.dataset.theme === 'dark' ? 'light':'dark'); render(); if (current.mode === 'visual') { capture(); visual?.refresh(); } break;
     case 'focus': focused = !focused; app.classList.toggle('focus-mode',focused); $('[data-action="focus"]').setAttribute('aria-pressed',String(focused)); editor?.view.requestMeasure(); break;
     case 'sync': sync = !sync; $('#sync-button').textContent = `Block sync ${sync ? 'on':'off'}`; $('#sync-button').setAttribute('aria-pressed',String(sync)); break;
+    case 'creator': void openExternal('https://me.sgopala.com').catch(error => toast(String(error), true)); break;
+    case 'privacy': $<HTMLDialogElement>('#help-dialog').close(); for (const key of ['recovery','spellcheck','html'] as const) $<HTMLInputElement>(`#pref-${key}`).checked = preferences[key]; $<HTMLDialogElement>('#privacy-dialog').showModal(); break;
+    case 'privacy-apply': void run(async () => {
+      const values = { recovery: $<HTMLInputElement>('#pref-recovery').checked, spellcheck: $<HTMLInputElement>('#pref-spellcheck').checked, html: $<HTMLInputElement>('#pref-html').checked };
+      if (preferences.recovery && !values.recovery) {
+        const choice = await ask('Turn off recovery copies?', 'Existing recovery copies will be cleared. Your open tabs and saved files stay intact. Save unsaved tabs before quitting.', [{label:'Cancel',value:'cancel'}, {label:'Turn off and clear copies',value:'clear',primary:true}]);
+        if (choice !== 'clear') return;
+        clearRecovery();
+      }
+      const stored = savePreferences(values); if (!values.html) stopHtml(); saveRecovery(); visual?.refresh(); render(); $<HTMLDialogElement>('#privacy-dialog').close(); toast(stored ? 'Privacy settings saved.' : 'Settings apply to this session; storage is unavailable.');
+    }); break;
     case 'help': $<HTMLDialogElement>('#help-dialog').showModal(); break;
     case 'source': void openExternal('https://github.com/gopalasubramanium/plainmark'); break;
   }
 }
 function setTheme(theme: string) { document.documentElement.dataset.theme = theme; const b = $('[data-action="theme"]'); b.innerHTML = icon(theme === 'dark' ? 'sun':'moon'); b.setAttribute('aria-label',theme === 'dark' ? 'Switch to light mode':'Switch to dark mode'); try { localStorage.setItem('plainmark.theme',theme); } catch {} }
 app.addEventListener('click',event => { const target = event.target as HTMLElement; const action = target.closest<HTMLButtonElement>('[data-action]')?.dataset.action; if (action) { dispatch(action); document.querySelectorAll<HTMLDetailsElement>('.insert-menu').forEach(menu => { menu.open = false; }); } const mode = target.closest<HTMLButtonElement>('[data-mode]')?.dataset.mode as Mode|undefined; if (mode && !busy) void setMode(mode); });
+$('#privacy-dialog .dialog-close').addEventListener('click',()=>$<HTMLDialogElement>('#privacy-dialog').close());
 $('#help-dialog .dialog-close').addEventListener('click',()=>$<HTMLDialogElement>('#help-dialog').close());
-$('#preview').addEventListener('click',event => { const a = (event.target as HTMLElement).closest('a'); if (!a) return; event.preventDefault(); const href = a.getAttribute('href') ?? ''; if (href.startsWith('#')) { const match = renderMarkdown(current.text).headings.find(h => h.id === href.slice(1) || h.text.toLowerCase().replace(/[^\p{L}\p{N}\s-]/gu,'').replace(/\s/g,'-') === href.slice(1)); if (match) $('#preview').querySelector(`#${match.id}`)?.scrollIntoView(); } else void openExternal(href).catch(error=>toast(String(error),true)); });
+async function followLink(href: string) {
+  if (/^(https?:|mailto:)/i.test(href)) { await openExternal(href); return; }
+  const { path, fragment } = documentLink(href);
+  if (path) await addDocument(await openLinkedDocument(current.file, path));
+  if (!fragment) return;
+  const headings = renderMarkdown(current.text).headings, slugs = headingSlugs(headings);
+  const index = headings.findIndex((heading, i) => heading.id === fragment || slugs[i] === fragment);
+  if (index < 0) { toast('That heading was not found in this document.', true); return; }
+  if (current.mode === 'visual') $('#visual-editor').querySelectorAll<HTMLElement>('h1,h2,h3,h4,h5,h6')[index]?.scrollIntoView({block:'start'});
+  else { editor?.jump(headings[index].line); document.getElementById(headings[index].id)?.scrollIntoView({block:'start'}); }
+}
+$('#preview').addEventListener('click', event => { const a = (event.target as HTMLElement).closest('a'); if (!a) return; event.preventDefault(); void run(() => followLink(a.getAttribute('href') ?? '')); });
 document.addEventListener('keydown',event => {
   if ([...document.querySelectorAll('dialog')].some(dialog=>dialog.open)) return;
   if (event.key === 'Escape' && focused) { dispatch('focus'); return; }
@@ -259,7 +312,7 @@ document.addEventListener('keydown',event => {
   if (!(event.metaKey || event.ctrlKey)) return;
   const key = event.key.toLowerCase();
   if ((event.target as HTMLElement).closest('[role="tablist"]') && ['arrowleft','arrowright'].includes(key)) { event.preventDefault(); return; }
-  const action = ({n:'new',o:event.shiftKey?'folder':'open',s:event.altKey?'save-all':event.shiftKey?'save-as':'save',w:'close-tab',b:'format:bold',i:'format:italic',k:'format:link',f:event.shiftKey?'focus':'find'} as Record<string,string>)[key];
+  const action = ({n:'new',o:event.shiftKey?'folder':'open',s:event.altKey?'save-all':event.shiftKey?'save-as':'save',w:'close-tab',p:event.shiftKey?'print':'quick-open',b:'format:bold',i:'format:italic',k:'format:link',f:event.shiftKey?'focus':'find'} as Record<string,string>)[key];
   if (action) { event.preventDefault(); event.stopPropagation(); dispatch(action); }
   else if (['1','2','3','4'].includes(key)) { event.preventDefault(); if (!busy) void setMode((['visual','write','split','read'] as Mode[])[Number(key)-1]); }
 },{capture:true});
@@ -273,7 +326,7 @@ if (!native) {
 async function drainNative() { if (busy) { pendingNative = true; return; } await run(async () => { const result = await invoke<{documents:DocumentFile[];errors:string[]}>('take_open_documents'); for (const doc of result.documents) await addDocument(doc); if (result.errors.length) toast(result.errors.join('\n'),true); }); }
 async function start() {
   let drafts: {name:string;text:string;mode?:Mode}[] = [];
-  try { setTheme(localStorage.getItem('plainmark.theme') ?? (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark':'light')); const saved = localStorage.getItem(draftKey), legacy = localStorage.getItem('plainmark.recovery.v1'); const parsed = saved ? JSON.parse(saved) : legacy ? [JSON.parse(legacy)]:[]; if (Array.isArray(parsed)) drafts = parsed.filter(item => typeof item?.text === 'string' && typeof item?.name === 'string' && item.text.length <= MAX_BYTES).slice(0,100); } catch {}
+  try { setTheme(localStorage.getItem('plainmark.theme') ?? (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark':'light')); const saved = localStorage.getItem(draftKey), legacy = localStorage.getItem('plainmark.recovery.v1'); const parsed = preferences.recovery ? (saved ? JSON.parse(saved) : legacy ? [JSON.parse(legacy)]:[]) : []; if (Array.isArray(parsed)) drafts = parsed.filter(item => typeof item?.text === 'string' && typeof item?.name === 'string' && item.text.length <= MAX_BYTES).slice(0,100); } catch {}
   // Read all drafts before the first activation writes recovery storage.
   if (drafts.length) { for (const draft of drafts) await addDocument({name:draft.name,text:draft.text},true); toast(`Recovered ${drafts.length} unsaved ${drafts.length===1?'tab':'tabs'}. Save to keep permanent copies.`); }
   else await addDocument({name:'welcome.md',text:welcome});

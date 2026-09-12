@@ -13,9 +13,10 @@ import { escapeHtml, type RichBlock } from './markdown';
 import { localImagePath, safeImageData } from './safe-images';
 import type { DocumentFile } from './files';
 import type { Node as PMNode } from 'prosemirror-model';
+import { preferences } from './preferences';
 
 export type EditField = (title: string, value: string, multiline?: boolean) => Promise<string | null>;
-interface Options { changed: (text: string) => void; edit: EditField; file: () => DocumentFile; readImage: ReadImage }
+interface Options { changed: (text: string) => void; edit: EditField; file: () => DocumentFile; readImage: ReadImage; openLink: (href: string) => void }
 export function createVisualEditor(parent: HTMLElement, text: string, options: Options) {
   let editable = true;
   const refreshers = new Set<() => void>();
@@ -54,7 +55,9 @@ export function createVisualEditor(parent: HTMLElement, text: string, options: O
         if (!alive || generation !== version) return; const img = document.createElement('img'); img.src = safeImageData(data); img.alt = node.attrs.alt || ''; img.title = 'Double-click to edit image path'; dom.replaceChildren(img);
       } catch { if (alive && version === generation) dom.textContent = `Image unavailable · ${node.attrs.alt || node.attrs.src}`; }
     };
-    dom.ondblclick = async () => { if (!editable) return; const src = await options.edit('Image path or data URL', node.attrs.src); const pos = getPos(); if (src !== null && pos !== undefined && alive) editor.dispatch(editor.state.tr.setNodeMarkup(pos, undefined, { ...node.attrs, src })); };
+    const editImage = async () => { if (!editable) return; const src = await options.edit('Image path or data URL', node.attrs.src); const pos = getPos(); if (src !== null && pos !== undefined && alive) editor.dispatch(editor.state.tr.setNodeMarkup(pos, undefined, { ...node.attrs, src })); };
+    dom.ondblclick = editImage; dom.tabIndex = 0; dom.setAttribute('role','button'); dom.setAttribute('aria-label','Edit image');
+    dom.onkeydown = event => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); void editImage(); } };
     const observer = new IntersectionObserver(entries => { if (entries.some(e => e.isIntersecting)) { observer.disconnect(); void render(); } }, {rootMargin:'300px'});
     const refresh = () => { generation++; dom.textContent = `Image · ${node.attrs.alt || node.attrs.src}`; observer.observe(dom); };
     dom.textContent = `Image · ${node.attrs.alt || node.attrs.src}`; observer.observe(dom); refreshers.add(refresh);
@@ -72,15 +75,15 @@ export function createVisualEditor(parent: HTMLElement, text: string, options: O
   const plugins = [
     history(), tableEditing(),
     inputRules({ rules: [textblockTypeInputRule(/^(#{1,6})\s$/, schema.nodes.heading, match => ({ level: match[1].length })), wrappingInputRule(/^\s*>\s$/, schema.nodes.blockquote), wrappingInputRule(/^\s*([-+*])\s$/, schema.nodes.bullet_list), wrappingInputRule(/^(\d+)\.\s$/, schema.nodes.ordered_list, match => ({ order: +match[1] }))] }),
-    keymap({ 'Mod-z': undo, 'Mod-Shift-z': redo, 'Mod-y': redo, 'Mod-b': toggleMark(schema.marks.strong), 'Mod-i': toggleMark(schema.marks.em), 'Mod-`': toggleMark(schema.marks.code), Enter: splitListItem(schema.nodes.list_item), Tab: chainCommands(goToNextCell(1), sinkListItem(schema.nodes.list_item)), 'Shift-Tab': chainCommands(goToNextCell(-1), liftListItem(schema.nodes.list_item)), 'Mod-Enter': chainCommands(exitCode, (state, dispatch) => { if (!(state.selection instanceof NodeSelection)) return false; const pos = state.selection.to; if (dispatch) { const tr = state.tr.insert(pos, schema.nodes.paragraph.create()); dispatch(tr.setSelection(TextSelection.create(tr.doc, pos + 1))); } return true; }) }),
+    keymap({ 'Mod-z': undo, 'Mod-Shift-z': redo, 'Mod-y': redo, 'Mod-b': toggleMark(schema.marks.strong), 'Mod-i': toggleMark(schema.marks.em), 'Mod-`': toggleMark(schema.marks.code), Enter: splitListItem(schema.nodes.list_item), Tab: chainCommands(goToNextCell(1), sinkListItem(schema.nodes.list_item)), 'Shift-Tab': chainCommands(goToNextCell(-1), liftListItem(schema.nodes.list_item)), 'Mod-Enter': chainCommands((state) => { const link = state.selection.$from.marks().find(mark => mark.type === schema.marks.link); if (!link) return false; options.openLink(link.attrs.href); return true; }, exitCode, (state, dispatch) => { if (!(state.selection instanceof NodeSelection)) return false; const pos = state.selection.to; if (dispatch) { const tr = state.tr.insert(pos, schema.nodes.paragraph.create()); dispatch(tr.setSelection(TextSelection.create(tr.doc, pos + 1))); } return true; }) }),
     keymap(baseKeymap),
   ];
   const view = new EditorView(parent, {
-    state: EditorState.create({ doc: parseVisual(text), plugins }), attributes: { class: 'prose visual-document', 'aria-label': 'Visual editor', role: 'textbox', 'aria-multiline': 'true', spellcheck: 'true' },
+    state: EditorState.create({ doc: parseVisual(text), plugins }), attributes: () => ({ class: 'prose visual-document', 'aria-label': 'Visual editor', role: 'textbox', 'aria-multiline': 'true', spellcheck: String(preferences.spellcheck), autocorrect: 'off', autocapitalize: 'off' }),
     editable: () => editable,
     nodeViews: { rich_block: richView, math_inline: richView, frontmatter: richView, image: imageView, list_item: taskView },
     transformPastedHTML: html => DOMPurify.sanitize(html, { USE_PROFILES: { html: true }, FORBID_TAGS: ['script', 'style', 'iframe', 'form'] }),
-    handleClick: (_view, _pos, event) => { const link = (event.target as HTMLElement).closest('a'); if (link) { event.preventDefault(); return true; } return false; },
+    handleClick: (_view, _pos, event) => { const link = (event.target as HTMLElement).closest('a'); if (link) { event.preventDefault(); if (event.metaKey || event.ctrlKey) options.openLink(link.getAttribute('href') ?? ''); return true; } return false; },
     dispatchTransaction(transaction) { const state = view.state.apply(transaction); view.updateState(state); if (transaction.docChanged) { stopHtml(); options.changed(serializeVisual(state.doc)); } },
   });
   return {
@@ -88,14 +91,16 @@ export function createVisualEditor(parent: HTMLElement, text: string, options: O
     load(source: string, saved?: EditorState) { const existing = [...refreshers]; view.updateState(saved ?? EditorState.create({ doc: parseVisual(source), plugins })); existing.forEach(render => { if (refreshers.has(render)) render(); }); },
     snapshot() { return view.state; },
     setEditable(value: boolean) { editable = value; view.setProps({ editable: () => value }); },
-    refresh() { refreshers.forEach(render => render()); },
+    refresh() { view.setProps({}); refreshers.forEach(render => render()); },
+    insertImage(src: string, alt: string) { view.dispatch(view.state.tr.replaceSelectionWith(schema.nodes.image.create({ src, alt })).scrollIntoView()); view.focus(); },
     async format(kind: string) {
       if (!editable) return;
       const commands: Record<string, Command> = { bold: toggleMark(schema.marks.strong), italic: toggleMark(schema.marks.em), strike: toggleMark(schema.marks.strike), heading: setBlockType(schema.nodes.heading, { level: 2 }), paragraph: setBlockType(schema.nodes.paragraph), list: wrapInList(schema.nodes.bullet_list), ordered: wrapInList(schema.nodes.ordered_list), quote: wrapIn(schema.nodes.blockquote), code: toggleMark(schema.marks.code), 'code-block': setBlockType(schema.nodes.code_block), 'row-add': addRowAfter, 'column-add': addColumnAfter, 'row-delete': deleteRow, 'column-delete': deleteColumn, 'table-delete': deleteTable, undo, redo };
       if (commands[kind]) { execute(commands[kind]); return; }
       let node: PMNode | undefined;
       if (kind === 'link') {
-        const value = await options.edit('Link address (leave empty to remove)', 'https://'); if (value === null) return;
+        const existing = view.state.selection.$from.marks().find(mark => mark.type === schema.marks.link)?.attrs.href ?? 'https://';
+        const value = await options.edit('Link address (leave empty to remove)', existing); if (value === null) return;
         if (value && /^(?:[a-z][a-z\d+.-]*:|\/\/)/i.test(value) && !/^(https?:|mailto:)/i.test(value)) throw new Error('Use a web, email, or document link.');
         const { from, to, empty } = view.state.selection;
         if (empty && value) { view.dispatch(view.state.tr.insertText(value).addMark(from, from + value.length, schema.marks.link.create({ href: value }))); }

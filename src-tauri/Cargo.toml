@@ -1,8 +1,8 @@
 [package]
 name = "plainmark"
-version = "0.2.2"
+version = "0.3.0"
 description = "A quiet, free Markdown editor"
-authors = ["Plainmark contributors"]
+authors = ["Gopala Subramanium", "Plainmark contributors"]
 license = "GPL-3.0-or-later"
 edition = "2021"
 rust-version = "1.85"
@@ -30,3 +30,10 @@ lto = true
 opt-level = "s"
 panic = "abort"
 strip = true
+
+# Backport the upstream GLib iterator soundness fix while Tauri uses GTK3.
+[patch.crates-io]
+glib = { path = "vendor/glib" }
+
+[target.'cfg(target_os = "linux")'.dev-dependencies]
+glib = "0.18"

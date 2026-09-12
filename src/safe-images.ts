@@ -8,8 +8,9 @@ export function svgDataUrl(source: string): string {
   if (svg.localName !== 'svg' || doc.querySelector('parsererror')) throw new Error('Invalid SVG image.');
   svg.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
   for (const el of [svg, ...svg.querySelectorAll('*')]) {
+    if (el.localName === 'style' && /@import|@font-face|url\(\s*['"]?(?!#)/i.test(el.textContent || '')) { el.remove(); continue; }
     for (const attr of [...el.attributes]) {
-      if ((/^(href|xlink:href)$/i.test(attr.name) && !attr.value.startsWith('#')) || /^on/i.test(attr.name)) el.removeAttribute(attr.name);
+      if ((/^(href|xlink:href)$/i.test(attr.name) && !attr.value.startsWith('#')) || /^on/i.test(attr.name) || /url\(\s*['"]?(?!#)/i.test(attr.value)) el.removeAttribute(attr.name);
     }
   }
   // SVG is displayed only through an image element, never inserted as active document HTML.

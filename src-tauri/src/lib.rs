@@ -16,6 +16,38 @@ struct OpenedDocuments {
     documents: Vec<Document>,
     errors: Vec<String>,
 }
+#[derive(Serialize)]
+struct PickedImage {
+    name: String,
+    encoded: String,
+}
+
+#[tauri::command]
+async fn print_document(window: tauri::WebviewWindow) -> Result<(), String> {
+    window.print().map_err(|e| e.to_string())
+}
+#[tauri::command]
+async fn pick_image(app: tauri::AppHandle) -> Result<Option<PickedImage>, String> {
+    use base64::Engine;
+    let Some(file) = app
+        .dialog()
+        .file()
+        .add_filter("Images", &["png", "jpg", "jpeg", "gif", "webp"])
+        .blocking_pick_file()
+    else {
+        return Ok(None);
+    };
+    let path = file.into_path().map_err(|e| e.to_string())?;
+    let bytes = files::read_limited(&path, 10 * 1024 * 1024)?;
+    Ok(Some(PickedImage {
+        name: path
+            .file_name()
+            .unwrap_or_default()
+            .to_string_lossy()
+            .into_owned(),
+        encoded: base64::engine::general_purpose::STANDARD.encode(bytes),
+    }))
+}
 
 fn queue_paths(app: &tauri::AppHandle, paths: impl Iterator<Item = PathBuf>) {
     let pending = app.state::<PendingFiles>();
@@ -53,6 +85,28 @@ async fn take_open_documents(
     Ok(result)
 }
 
+#[tauri::command]
+async fn import_image(
+    id: u64,
+    encoded: String,
+    store: State<'_, Mutex<FileStore>>,
+) -> Result<String, String> {
+    store
+        .lock()
+        .map_err(|e| e.to_string())?
+        .import_image(id, &encoded)
+}
+#[tauri::command]
+async fn open_linked_document(
+    id: u64,
+    path: String,
+    store: State<'_, Mutex<FileStore>>,
+) -> Result<Document, String> {
+    store
+        .lock()
+        .map_err(|e| e.to_string())?
+        .open_link(id, &path)
+}
 #[tauri::command]
 async fn open_document(
     app: tauri::AppHandle,
@@ -258,6 +312,8 @@ fn app_menu(app: &tauri::App) -> tauri::Result<()> {
         .item(&item("save-as", "Save As…", "CmdOrCtrl+Shift+S")?)
         .item(&item("save-all", "Save All", "CmdOrCtrl+Alt+S")?)
         .text("export", "Export HTML…")
+        .item(&item("print", "Print / Save as PDF…", "CmdOrCtrl+Shift+P")?)
+        .item(&item("quick-open", "Quick Open…", "CmdOrCtrl+P")?)
         .separator()
         .item(&item("close-tab", "Close Tab", "CmdOrCtrl+W")?);
     if !cfg!(target_os = "macos") {
@@ -318,6 +374,9 @@ pub fn run() {
             tauri::http::Response::builder().status(if valid { 200 } else { 404 })
                 .header("Content-Type", "text/html; charset=utf-8")
                 .header("Cache-Control", "no-store")
+                .header("X-Content-Type-Options", "nosniff")
+                .header("Referrer-Policy", "no-referrer")
+                .header("Permissions-Policy", "camera=(), microphone=(), geolocation=(), clipboard-read=(), clipboard-write=(), display-capture=(), payment=(), usb=()")
                 .header("Content-Security-Policy", "default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data: blob:; font-src data:; connect-src 'none'; frame-src 'none'; worker-src 'none'; base-uri 'none'; form-action 'none'; sandbox allow-scripts")
                 .body(if valid { state.1.clone().into_bytes() } else { b"Preview stopped".to_vec() }).unwrap()
         })
@@ -331,7 +390,7 @@ pub fn run() {
             queue_paths(app.handle(), std::env::args_os().skip(1).filter(|arg| !arg.to_string_lossy().starts_with('-')).map(|arg| cwd.join(arg)));
             Ok(())
         })
-        .invoke_handler(tauri::generate_handler![open_document, open_workspace, list_folder, open_workspace_file, close_workspace, close_document, take_open_documents, save_document, save_document_as, read_image, export_html, open_external, create_html_preview, stop_html_preview, quit])
+        .invoke_handler(tauri::generate_handler![print_document, pick_image, import_image, open_linked_document, open_document, open_workspace, list_folder, open_workspace_file, close_workspace, close_document, take_open_documents, save_document, save_document_as, read_image, export_html, open_external, create_html_preview, stop_html_preview, quit])
         .build(tauri::generate_context!()).expect("Could not start Plainmark")
         .run(|app, event| {
             match event {

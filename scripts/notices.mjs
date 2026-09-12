@@ -36,8 +36,8 @@ for (const name of Object.keys(manifest.dependencies)) {
 }
 const metadata = JSON.parse(execFileSync('cargo', ['metadata', '--locked', '--format-version', '1', '--manifest-path', 'src-tauri/Cargo.toml'], { maxBuffer: 32 * 1024 * 1024, encoding: 'utf8', stdio: ['ignore', 'pipe', 'inherit'] }));
 for (const pkg of metadata.packages) {
-  if (!pkg.source) continue;
-  const key = `Rust ${pkg.name}@${pkg.version}`;
+  if (!pkg.source && pkg.name !== "glib") continue;
+  const key = `Rust ${pkg.name}@${pkg.version}${pkg.source ? "" : " (local security backport; see src-tauri/vendor/README.md)"}`;
   const texts = licenseTexts(dirname(pkg.manifest_path));
   if (pkg.license_file && !texts.some((text) => text.startsWith(`--- ${pkg.license_file} ---`))) {
     const path = resolve(dirname(pkg.manifest_path), pkg.license_file);

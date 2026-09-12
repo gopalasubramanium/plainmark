@@ -35,3 +35,13 @@ The initial pipeline uses ad-hoc macOS signing and unsigned Windows packages. It
 Before changing this, follow the official [macOS signing](https://v2.tauri.app/distribute/sign/macos/) and [Windows signing](https://v2.tauri.app/distribute/sign/windows/) guides. Store signing credentials as GitHub Actions secrets, never in the repository. Do not remove platform security protections to make an unsigned build appear trusted.
 
 There is no in-app updater or background version check. Users obtain updates explicitly from GitHub Releases.
+
+## Security and publisher signing
+
+All dependency audits and the explicit GLib backport verification must pass. Rust maintenance warnings remain visible for review. External Actions are pinned to commit hashes. Review any pin update before merging it.
+
+Release builds add per-platform SHA-256 files and GitHub artifact attestations after packaging. Verify them against the exact downloadable files, not an earlier local build. Leave the release as a draft until platform installation and signature status have been checked.
+
+The dedicated signed-macOS workflow can replace Mac artifacts only in an unpublished draft after the ordinary release workflow succeeds. It refuses missing signing credentials, checks Developer ID, hardened runtime, notarization and Gatekeeper, and leaves the release as a draft. Windows requires provider onboarding and signing of both the inner executable and installer. Follow [SIGNING.md](SIGNING.md); source preparation is not proof of successful signing.
+
+`DEPENDABOT-PENDING.yml` is a prepared configuration, not active automation. Additional dependency-alert settings, automated fix PRs and weekly scans await explicit maintainer approval.

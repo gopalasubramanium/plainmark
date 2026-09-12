@@ -69,6 +69,96 @@ pub fn atomic_write(path: &Path, bytes: &[u8]) -> Result<(), String> {
 }
 
 impl FileStore {
+    pub fn import_image(&self, id: u64, encoded: &str) -> Result<String, String> {
+        use base64::Engine;
+        if encoded.len() > 14 * 1024 * 1024 {
+            return Err("Image exceeds 10 MB.".into());
+        }
+        let bytes = base64::engine::general_purpose::STANDARD
+            .decode(encoded)
+            .map_err(|_| "Invalid image data")?;
+        if bytes.len() > 10 * 1024 * 1024 {
+            return Err("Image exceeds 10 MB.".into());
+        }
+        let extension = if bytes.starts_with(b"\x89PNG\r\n\x1a\n") {
+            "png"
+        } else if bytes.starts_with(b"\xff\xd8\xff") {
+            "jpg"
+        } else if bytes.starts_with(b"GIF87a") || bytes.starts_with(b"GIF89a") {
+            "gif"
+        } else if bytes.starts_with(b"RIFF") && bytes.get(8..12) == Some(b"WEBP") {
+            "webp"
+        } else {
+            return Err("Choose a PNG, JPEG, GIF, or WebP image.".into());
+        };
+        let entry = self
+            .entries
+            .get(&id)
+            .ok_or("Save this document before adding an image.")?;
+        let parent = entry.path.parent().ok_or("Missing folder")?;
+        let assets = parent.join("assets");
+        match fs::create_dir(&assets) {
+            Ok(()) => (),
+            Err(error) if error.kind() == std::io::ErrorKind::AlreadyExists => (),
+            Err(error) => return Err(error.to_string()),
+        }
+        let metadata = fs::symlink_metadata(&assets).map_err(|e| e.to_string())?;
+        if metadata.file_type().is_symlink()
+            || !metadata.is_dir()
+            || assets.canonicalize().map_err(|e| e.to_string())? != assets
+        {
+            return Err("The assets folder must be a real folder beside this document.".into());
+        }
+        let mut file = tempfile::Builder::new()
+            .prefix("image-")
+            .suffix(&format!(".{extension}"))
+            .tempfile_in(&assets)
+            .map_err(|e| e.to_string())?;
+        file.write_all(&bytes).map_err(|e| e.to_string())?;
+        file.as_file().sync_all().map_err(|e| e.to_string())?;
+        let (_, path) = file.keep().map_err(|e| e.to_string())?;
+        Ok(format!(
+            "assets/{}",
+            path.file_name().unwrap().to_string_lossy()
+        ))
+    }
+
+    pub fn open_link(&mut self, id: u64, relative: &str) -> Result<Document, String> {
+        let entry = self.entries.get(&id).ok_or("Document closed")?;
+        let relative = Path::new(relative);
+        if relative.is_absolute()
+            || relative.components().any(|c| {
+                matches!(
+                    c,
+                    std::path::Component::Prefix(_) | std::path::Component::RootDir
+                )
+            })
+        {
+            return Err("Use a relative document link inside the selected folder.".into());
+        }
+        let root = entry.image_root.clone();
+        let path = entry
+            .path
+            .parent()
+            .ok_or("Missing folder")?
+            .join(relative)
+            .canonicalize()
+            .map_err(|_| {
+                "Linked document not found. Check its filename or open the containing folder."
+            })?;
+        if !path.starts_with(&root) || !is_document(&path) {
+            return Err(
+                "This link leaves the selected folder or is not a supported document.".into(),
+            );
+        }
+        let document = self.open(path)?;
+        let linked = self.entries.get_mut(&document.id).unwrap();
+        if linked.image_root.starts_with(&root) {
+            linked.image_root = root;
+        }
+        Ok(document)
+    }
+
     pub fn open(&mut self, path: PathBuf) -> Result<Document, String> {
         let path = path.canonicalize().map_err(|e| e.to_string())?;
         if let Some((&id, entry)) = self.entries.iter().find(|(_, entry)| entry.path == path) {
@@ -384,6 +474,78 @@ impl FileStore {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn linked_notes_stay_in_scope_and_keep_existing_tab_identity() {
+        let dir = tempfile::tempdir().unwrap();
+        fs::create_dir(dir.path().join("notes")).unwrap();
+        fs::write(dir.path().join("start.md"), "start").unwrap();
+        fs::write(dir.path().join("notes/第二 note.md"), "next").unwrap();
+        fs::write(dir.path().join("secret.bin"), "secret").unwrap();
+        let mut store = FileStore::default();
+        let first = store.open(dir.path().join("start.md")).unwrap();
+        let next = store.open_link(first.id, "notes/第二 note.md").unwrap();
+        assert_eq!(
+            store.open_link(next.id, "../start.md").unwrap().id,
+            first.id
+        );
+        assert_eq!(
+            store.open_link(first.id, "notes/第二 note.md").unwrap().id,
+            next.id
+        );
+        assert!(store.open_link(first.id, "secret.bin").is_err());
+        assert!(store.open_link(first.id, "../outside.md").is_err());
+        assert!(store
+            .open_link(first.id, &dir.path().join("start.md").to_string_lossy())
+            .is_err());
+        store.close(first.id);
+        assert!(store.open_link(first.id, "notes/第二 note.md").is_err());
+    }
+    #[test]
+    fn image_import_is_scoped_unique_and_does_not_overwrite_the_document() {
+        use base64::Engine;
+        let dir = tempfile::tempdir().unwrap();
+        let mut store = FileStore::default();
+        let doc = store
+            .save_as(dir.path().join("note.md"), "original", None)
+            .unwrap();
+        let bytes = b"\x89PNG\r\n\x1a\nexample";
+        let data = base64::engine::general_purpose::STANDARD.encode(bytes);
+        let a = store.import_image(doc.id, &data).unwrap();
+        let b = store.import_image(doc.id, &data).unwrap();
+        assert_ne!(a, b);
+        assert!(a.starts_with("assets/image-"));
+        assert_eq!(fs::read(dir.path().join(a)).unwrap(), bytes);
+        assert_eq!(
+            fs::read_to_string(dir.path().join("note.md")).unwrap(),
+            "original"
+        );
+        assert!(store.import_image(doc.id, "PHNjcmlwdD4=").is_err());
+        assert!(store
+            .import_image(doc.id, &"a".repeat(14 * 1024 * 1024 + 1))
+            .is_err());
+        store.close(doc.id);
+        assert!(store.import_image(doc.id, &data).is_err());
+    }
+    #[cfg(unix)]
+    #[test]
+    fn image_import_and_note_links_reject_symlink_escapes() {
+        let dir = tempfile::tempdir().unwrap();
+        let outside = tempfile::tempdir().unwrap();
+        let mut store = FileStore::default();
+        let doc = store
+            .save_as(dir.path().join("note.md"), "original", None)
+            .unwrap();
+        fs::write(outside.path().join("secret.md"), "private").unwrap();
+        std::os::unix::fs::symlink(outside.path(), dir.path().join("assets")).unwrap();
+        std::os::unix::fs::symlink(
+            outside.path().join("secret.md"),
+            dir.path().join("linked.md"),
+        )
+        .unwrap();
+        assert!(store.import_image(doc.id, "iVBORw0KGgo=").is_err());
+        assert!(store.open_link(doc.id, "linked.md").is_err());
+        assert_eq!(fs::read_dir(outside.path()).unwrap().count(), 1);
+    }
     #[test]
     fn reopening_preserves_conflict_baseline_and_protects_other_tabs() {
         let dir = tempfile::tempdir().unwrap();

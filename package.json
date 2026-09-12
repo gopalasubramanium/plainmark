@@ -1,6 +1,6 @@
 {
   "name": "plainmark",
-  "version": "0.2.2",
+  "version": "0.3.0",
   "private": true,
   "description": "A quiet, free, open-source Markdown editor for Windows, macOS, and Linux.",
   "license": "GPL-3.0-or-later",
@@ -54,5 +54,9 @@
     "vite": "^8.2.2",
     "vitest": "^5.0.0"
   },
-  "packageManager": "pnpm@11.19.0"
+  "packageManager": "pnpm@11.19.0",
+  "author": {
+    "name": "Gopala Subramanium",
+    "url": "https://me.sgopala.com"
+  }
 }

@@ -1,0 +1,87 @@
+name: Signed and notarized macOS release
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Unpublished release tag to sign (for example v0.3.1)
+        required: true
+        type: string
+permissions:
+  contents: write
+  id-token: write
+  attestations: write
+jobs:
+  sign:
+    environment: release-signing
+    strategy:
+      fail-fast: false
+      matrix:
+        target: [aarch64-apple-darwin, x86_64-apple-darwin]
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: ${{ inputs.tag }}
+          fetch-depth: 0
+      - name: Require an unpublished version tag on main
+        env:
+          RELEASE_TAG: ${{ inputs.tag }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          python3 scripts/check-signing-release.py
+          git merge-base --is-ancestor HEAD origin/main
+      - uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
+        with:
+          version: 11.19.0
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - uses: dtolnay/rust-toolchain@6bed0761d98439e5a578e2877258200ad565ba87 # stable
+        with:
+          toolchain: stable
+          targets: ${{ matrix.target }}
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm audit --audit-level low
+      - run: pnpm test
+      - run: cargo test --locked --manifest-path src-tauri/Cargo.toml
+      - name: Require a real signing identity and notarization credentials
+        env:
+          APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
+          APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
+          APPLE_SIGNING_IDENTITY: ${{ secrets.APPLE_SIGNING_IDENTITY }}
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_PASSWORD: ${{ secrets.APPLE_PASSWORD }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+        run: python3 scripts/check-apple-signing.py
+      - uses: tauri-apps/tauri-action@1deb371b0cd8bd54025b384f1cd735e725c4060f # v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
+          APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
+          APPLE_SIGNING_IDENTITY: ${{ secrets.APPLE_SIGNING_IDENTITY }}
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_PASSWORD: ${{ secrets.APPLE_PASSWORD }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+        with:
+          tagName: ${{ inputs.tag }}
+          releaseName: Plainmark v__VERSION__
+          releaseDraft: true
+          prerelease: true
+          uploadUpdaterJson: false
+          args: --target ${{ matrix.target }} --bundles app,dmg
+      - name: Verify Developer ID, hardened runtime, notarization and Gatekeeper assessment
+        env:
+          EXPECTED_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          BUNDLE_PATH: src-tauri/target/${{ matrix.target }}/release/bundle/macos/Plainmark.app
+        run: python3 scripts/verify-macos-signature.py
+      - id: checksums
+        run: python3 scripts/release-checksums.py src-tauri/target/${{ matrix.target }}/release/bundle ${{ matrix.target }}
+      - uses: actions/attest-build-provenance@977bb373ede98d70efdf65b84cb5f73e068dcc2a # v3
+        with:
+          subject-path: ${{ steps.checksums.outputs.artifacts }}
+      - env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RELEASE_TAG: ${{ inputs.tag }}
+          CHECKSUM_FILE: ${{ steps.checksums.outputs.checksum }}
+        run: gh release upload "$RELEASE_TAG" "$CHECKSUM_FILE" --clobber
