@@ -52,4 +52,4 @@ Made by Gopala Subramanium and contributors because everyday Markdown should be 
 
 ## Platform-specific pending values
 
-Microsoft's package identity, Publisher value and Store product ID must be copied from the verified Partner Center account. Apple needs an App Store Connect record, registered explicit bundle ID, Mac App Store signing certificates and provisioning profile. Snap requires a registered name and publisher account. Do not make up these identifiers or submit placeholder packages.
+Microsoft product `9PB6H8Z02K0G` and Apple app `6811364319` are registered as **Plainmark Markdown Editor**. Exact MSIX identity values are committed in `packaging/windows/AppxManifest.xml`. Apple Store certificates and a matching profile have been issued and installed in the publisher's local Keychain; the profile is intentionally ignored by Git. Snap requires a registered name and publisher account. Do not make up these identifiers or submit placeholder packages.
