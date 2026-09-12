@@ -23,6 +23,7 @@ function resolveDependency(from, name) {
 function npmNotice(folder) {
   const data = JSON.parse(readFileSync(join(folder, 'package.json'), 'utf8'));
   const key = `npm ${data.name}@${data.version}`; if (records.has(key)) return;
+  if (data.name === 'elkjs' && !data.license?.includes('GPL-3.0')) throw new Error('ELK must include its explicit GPL-3.0 secondary license. Check the workspace override.');
   const texts = licenseTexts(folder);
   records.set(key, `${key}\nLicense: ${typeof data.license === 'string' ? data.license : JSON.stringify(data.license)}\nSource: https://www.npmjs.com/package/${data.name}/v/${data.version}\n${texts.join('\n\n')}`);
   for (const name of Object.keys({ ...data.dependencies, ...data.optionalDependencies })) {

@@ -1,0 +1,4 @@
+# Mermaid accepts the stable ELK API. 0.12 adds explicit GPLv3 compatibility.
+# https://github.com/kieler/elkjs/issues/373
+overrides:
+  'mermaid>elkjs': 0.12.0

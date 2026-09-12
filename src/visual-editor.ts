@@ -85,7 +85,7 @@ export function createVisualEditor(parent: HTMLElement, text: string, options: O
   });
   return {
     view,
-    load(source: string, saved?: EditorState) { view.updateState(saved ?? EditorState.create({ doc: parseVisual(source), plugins })); refreshers.forEach(render => render()); },
+    load(source: string, saved?: EditorState) { const existing = [...refreshers]; view.updateState(saved ?? EditorState.create({ doc: parseVisual(source), plugins })); existing.forEach(render => { if (refreshers.has(render)) render(); }); },
     snapshot() { return view.state; },
     setEditable(value: boolean) { editable = value; view.setProps({ editable: () => value }); },
     refresh() { refreshers.forEach(render => render()); },

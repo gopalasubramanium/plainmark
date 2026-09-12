@@ -167,3 +167,11 @@ test('small screens keep visual editing usable without horizontal overflow', asy
   await page.getByRole('button',{name:'Toggle sidebar'}).click();
   await expect(page.getByRole('button',{name:'Open a folder'})).toBeVisible();
 });
+
+
+test('Mermaid ELK layout renders with the GPL-compatible layout engine', async ({ page }) => {
+  const requests:string[]=[]; page.on('request',request=>requests.push(request.url()));
+  await source(page,'```mermaid\n---\nconfig:\n  layout: elk\n---\nflowchart LR\n A --> B\n A --> C\n```');
+  await expect(page.locator('#preview img.diagram-image')).toBeVisible({timeout:20000});
+  expect(requests.some(url=>/elk/i.test(url))).toBe(true);
+});

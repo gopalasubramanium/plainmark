@@ -29,3 +29,7 @@ An installed build offers Plainmark in the OS Open with menu for `.md`, `.markdo
 Unsaved tabs have local recovery copies, subject to the webview storage quota. Recovery opens copies without file write permission; save them to reconnect to a permanent file. Closing a tab prompts before discarding changes. External edits cause a conflict message instead of an overwrite. Use Save As with another filename, or close and reopen to load the external version.
 
 The browser development preview supports folder images through a chosen folder. In browsers without writable file handles, Save downloads a copy. The desktop app uses native pickers, menus, and atomic file writes.
+
+## Bundled layout engine
+
+Mermaid’s ELK dependency is pinned to 0.12.0, which explicitly adds GPL-3.0-or-later as a secondary license. The normal install and bundle notice checks enforce this choice. See the [upstream licensing change](https://github.com/kieler/elkjs/issues/373).
