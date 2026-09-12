@@ -73,8 +73,12 @@ public static class PlainmarkTestWindow {
             do {
                 $node = $window.FindFirst([Windows.Automation.TreeScope]::Descendants, $condition)
                 if ($node) { return $node }
+                $all = $window.FindAll([Windows.Automation.TreeScope]::Descendants, [Windows.Automation.Condition]::TrueCondition)
+                $node = @($all | Where-Object { $_.Current.Name.StartsWith($name, [StringComparison]::Ordinal) }) | Select-Object -First 1
+                if ($node) { return $node }
                 Start-Sleep -Milliseconds 250
             } while ((Get-Date) -lt $limit)
+            @($all | ForEach-Object { "$($_.Current.ControlType.ProgrammaticName): $($_.Current.Name)" }) | Set-Content (Join-Path $evidence 'missing-control.txt')
             throw "Missing app control: $name"
         }
         function Capture-App([string]$name) {
@@ -95,7 +99,7 @@ public static class PlainmarkTestWindow {
         $fixture = Join-Path $scratch 'Windows-store-test.md'
         $original = "# Plainmark on Windows`n`nA local document opened from the installed Store package.`n"
         [IO.File]::WriteAllText($fixture, $original)
-        (Find-AppControl 'Open a file').GetCurrentPattern([Windows.Automation.InvokePattern]::Pattern).Invoke()
+        [Windows.Forms.SendKeys]::SendWait('^o')
         Start-Sleep -Seconds 1
         Set-Clipboard -Value $fixture
         [Windows.Forms.SendKeys]::SendWait('^v{ENTER}')
