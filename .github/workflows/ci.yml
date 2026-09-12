@@ -25,8 +25,8 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm build
       - run: pnpm test
-      - name: Verify checksum manifests for every installer platform
-        run: python3 scripts/test-release-checksums.py
+      - name: Verify draft creation and every installer checksum manifest
+        run: python3 -m unittest discover -s scripts -p 'test_*.py'
       - run: pnpm exec playwright install --with-deps chromium webkit
       - run: pnpm test:e2e
       - name: Preserve browser failure evidence
