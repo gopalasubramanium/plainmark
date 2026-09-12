@@ -23,6 +23,7 @@ modules:
   - name: plainmark
     buildsystem: simple
     build-commands:
+      - chmod +x flatpak-pnpm/bin/pnpm.cjs
       - mkdir -p flatpak-bin && ln -s ../flatpak-pnpm/bin/pnpm.cjs flatpak-bin/pnpm
       - pnpm install --offline --frozen-lockfile --ignore-scripts
       - cargo test --offline --locked --manifest-path src-tauri/Cargo.toml
