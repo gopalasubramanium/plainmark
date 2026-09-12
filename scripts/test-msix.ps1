@@ -63,7 +63,7 @@ public static class PlainmarkTestWindow {
 }
 '@
         if (Get-Command Set-DisplayResolution -ErrorAction SilentlyContinue) {
-            Set-DisplayResolution -Width 1600 -Height 1000 -Force
+            Set-DisplayResolution -Width 1920 -Height 1080 -Force
         }
         [PlainmarkTestWindow]::SetWindowPos($app.MainWindowHandle, [IntPtr]::Zero, 0, 0, 1500, 940, 0x0040) | Out-Null
         [PlainmarkTestWindow]::SetForegroundWindow($app.MainWindowHandle) | Out-Null

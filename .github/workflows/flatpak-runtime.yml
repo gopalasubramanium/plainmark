@@ -40,6 +40,7 @@ jobs:
           GTK_MODULES: gail:atk-bridge
           XDG_CURRENT_DESKTOP: GNOME
           NO_AT_BRIDGE: '0'
+          ATSPI_DISABLE_P2P: '1'
         run: xvfb-run -a -s '-screen 0 1600x1000x24' dbus-run-session -- python3 scripts/test-flatpak-runtime.py
       - name: Preserve runtime evidence
         if: always()

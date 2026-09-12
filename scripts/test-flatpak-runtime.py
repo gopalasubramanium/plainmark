@@ -46,7 +46,9 @@ with tempfile.TemporaryDirectory(prefix="plainmark-portal-test-") as directory:
     document.write_text(f"# Plainmark on Linux\n\n{marker}.\n\n- Local Markdown\n- No account required\n", encoding="utf-8")
     # Flatpak forwards only this selected file through the document portal.
     with open("flatpak-runtime.log", "w") as log:
-        process = subprocess.Popen(["flatpak", "run", "--file-forwarding", APP, "@@", str(document), "@@"], stdout=log, stderr=subprocess.STDOUT)
+        # The Ubuntu host's older AT-SPI client cannot reach private socket paths
+        # advertised inside a Flatpak. Keep accessibility on its filtered bus.
+        process = subprocess.Popen(["flatpak", "run", "--env=ATSPI_DISABLE_P2P=1", "--file-forwarding", APP, "@@", str(document), "@@"], stdout=log, stderr=subprocess.STDOUT)
         try:
             deadline = time.monotonic() + 70
             while time.monotonic() < deadline:
