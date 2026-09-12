@@ -1,4 +1,4 @@
-param([Parameter(Mandatory=$true)][string]$PackagePath)
+param([Parameter(Mandatory=$true)][string]$PackagePath, [string]$EvidenceDirectory)
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
 if ($env:GITHUB_ACTIONS -ne 'true' -or $env:RUNNER_ENVIRONMENT -ne 'github-hosted') {
@@ -50,6 +50,75 @@ try {
     }
     $version = $installed.Version.ToString()
     Write-Output "Installed and launched Store identity $identity, version $version; editor accessibility controls are present."
+    if ($EvidenceDirectory) {
+        New-Item -ItemType Directory -Force $EvidenceDirectory | Out-Null
+        $evidence = (Resolve-Path $EvidenceDirectory).Path
+        Add-Type -AssemblyName System.Windows.Forms, System.Drawing
+        Add-Type @'
+using System;
+using System.Runtime.InteropServices;
+public static class PlainmarkTestWindow {
+    [DllImport("user32.dll")] public static extern bool SetForegroundWindow(IntPtr window);
+    [DllImport("user32.dll")] public static extern bool SetWindowPos(IntPtr window, IntPtr after, int x, int y, int width, int height, uint flags);
+}
+'@
+        if (Get-Command Set-DisplayResolution -ErrorAction SilentlyContinue) {
+            Set-DisplayResolution -Width 1600 -Height 1000 -Force
+        }
+        [PlainmarkTestWindow]::SetWindowPos($app.MainWindowHandle, [IntPtr]::Zero, 0, 0, 1500, 940, 0x0040) | Out-Null
+        [PlainmarkTestWindow]::SetForegroundWindow($app.MainWindowHandle) | Out-Null
+        function Find-AppControl([string]$name) {
+            $condition = [Windows.Automation.PropertyCondition]::new([Windows.Automation.AutomationElement]::NameProperty, $name)
+            $limit = (Get-Date).AddSeconds(15)
+            do {
+                $node = $window.FindFirst([Windows.Automation.TreeScope]::Descendants, $condition)
+                if ($node) { return $node }
+                Start-Sleep -Milliseconds 250
+            } while ((Get-Date) -lt $limit)
+            throw "Missing app control: $name"
+        }
+        function Capture-App([string]$name) {
+            Start-Sleep -Milliseconds 600
+            $bounds = $window.Current.BoundingRectangle
+            $screen = [Windows.Forms.Screen]::PrimaryScreen.Bounds
+            if ($bounds.Width -lt 1366 -or $bounds.Height -lt 768 -or $bounds.Right -gt $screen.Right -or $bounds.Bottom -gt $screen.Bottom) {
+                throw 'The test desktop cannot capture the Store screenshot at its actual required size.'
+            }
+            $bitmap = [Drawing.Bitmap]::new([int]$bounds.Width, [int]$bounds.Height)
+            $graphics = [Drawing.Graphics]::FromImage($bitmap)
+            try {
+                $graphics.CopyFromScreen([int]$bounds.X, [int]$bounds.Y, 0, 0, $bitmap.Size)
+                $bitmap.Save((Join-Path $evidence $name), [Drawing.Imaging.ImageFormat]::Png)
+            } finally { $graphics.Dispose(); $bitmap.Dispose() }
+        }
+        Capture-App '01-visual-editor.png'
+        $fixture = Join-Path $scratch 'Windows-store-test.md'
+        $original = "# Plainmark on Windows`n`nA local document opened from the installed Store package.`n"
+        [IO.File]::WriteAllText($fixture, $original)
+        (Find-AppControl 'Open a file').GetCurrentPattern([Windows.Automation.InvokePattern]::Pattern).Invoke()
+        Start-Sleep -Seconds 1
+        Set-Clipboard -Value $fixture
+        [Windows.Forms.SendKeys]::SendWait('^v{ENTER}')
+        $null = Find-AppControl 'Windows-store-test.md'
+        [PlainmarkTestWindow]::SetForegroundWindow($app.MainWindowHandle) | Out-Null
+        [Windows.Forms.SendKeys]::SendWait('^2')
+        $source = Find-AppControl 'Markdown editor'
+        $source.SetFocus()
+        $updated = $original + "`nSaved from the installed editor.`n"
+        Set-Clipboard -Value $updated
+        [Windows.Forms.SendKeys]::SendWait('^a^v')
+        Start-Sleep -Milliseconds 500
+        [Windows.Forms.SendKeys]::SendWait('^s')
+        $limit = (Get-Date).AddSeconds(15)
+        while ([IO.File]::ReadAllText($fixture) -ne $updated -and (Get-Date) -lt $limit) { Start-Sleep -Milliseconds 300 }
+        if ([IO.File]::ReadAllText($fixture) -ne $updated) { throw 'Editing and native saving did not persist the expected Markdown.' }
+        Write-Output 'PASS: Native file picker, source editing and save persisted the expected document.'
+        [Windows.Forms.SendKeys]::SendWait('^3')
+        $null = Find-AppControl 'Rendered document'
+        Capture-App '02-source-and-preview.png'
+        $nodes = $window.FindAll([Windows.Automation.TreeScope]::Descendants, [Windows.Automation.Condition]::TrueCondition)
+        @($nodes | ForEach-Object { $_.Current.Name }) | Set-Content (Join-Path $evidence 'editor-accessibility.txt')
+    }
     Get-Process plainmark -ErrorAction SilentlyContinue | Stop-Process
     Remove-AppxPackage -Package $installed.PackageFullName
     if (Get-AppxPackage -Name $identity) { throw 'Uninstall left the package registered.' }
@@ -57,7 +126,7 @@ try {
         throw 'The unsigned Store candidate changed during testing.'
     }
     Write-Output 'Installation, visible editor launch, uninstall, and unchanged submission-package hash passed.'
-    Write-Output 'Manual file activation, save, print, upgrade, accessibility and missing-WebView2 tests are still required.'
+    Write-Output 'Default file association, multi-file activation, folders, print, upgrade, accessibility usability and missing-WebView2 tests are still required.'
 } finally {
     Get-Process plainmark -ErrorAction SilentlyContinue | Stop-Process -ErrorAction SilentlyContinue
     Get-AppxPackage -Name $identity | Remove-AppxPackage -ErrorAction SilentlyContinue

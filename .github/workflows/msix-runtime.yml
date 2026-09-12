@@ -1,0 +1,42 @@
+name: Microsoft Store installed-file test
+on:
+  workflow_dispatch:
+    inputs:
+      build_run:
+        description: Successful main-branch Microsoft Store package build
+        required: true
+        default: '34701120809'
+permissions:
+  contents: read
+  actions: read
+jobs:
+  runtime:
+    runs-on: windows-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - name: Retrieve the verified Store candidate
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BUILD_RUN: ${{ inputs.build_run }}
+        run: |
+          if ($env:BUILD_RUN -notmatch '^\d+$') { throw 'Invalid build run.' }
+          $build = gh api "repos/$env:GITHUB_REPOSITORY/actions/runs/$env:BUILD_RUN" | ConvertFrom-Json
+          if ($LASTEXITCODE -ne 0 -or $build.path -ne '.github/workflows/msix.yml' -or $build.head_branch -ne 'main' -or $build.event -ne 'workflow_dispatch' -or $build.conclusion -ne 'success') { throw 'A successful main-branch Store build is required.' }
+          $build | ConvertTo-Json -Depth 8 | Set-Content build-run.json
+          gh run download $env:BUILD_RUN --name Plainmark-Microsoft-Store-package --dir candidate
+          if ($LASTEXITCODE -ne 0) { throw 'Candidate download failed.' }
+          Get-FileHash candidate/*.msix | Format-List
+      - name: Test file editing and capture the actual Windows app
+        shell: pwsh
+        run: ./scripts/test-msix.ps1 -PackagePath (Get-ChildItem candidate/*.msix | Select-Object -ExpandProperty FullName) -EvidenceDirectory windows-evidence
+      - name: Preserve screenshots and test evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: Plainmark-Windows-runtime-evidence
+          path: |
+            windows-evidence/
+            build-run.json
+          retention-days: 14
