@@ -112,7 +112,7 @@ Untrusted HTML can consume CPU and memory. A malicious process already running a
 
 ## Platform signing and installation trust
 
-macOS distribution outside the App Store requires the appropriate Developer ID identity and notarization process. A previous paid developer membership does not establish that it is active now. No valid code-signing identity was found on the local Mac during this update. A dedicated workflow has been prepared for both Mac architectures; it fails without real credentials and checks the publisher team, hardened runtime, notarization ticket and Gatekeeper assessment before a release can be described as verified.[^21][^22]
+macOS distribution outside the App Store requires the appropriate Developer ID identity and notarization process. A Developer ID Application certificate has now been issued, matches the locally generated key request, and passes macOS code-signing certificate trust validation. The signing key remains in the local Keychain; CI credentials and notarization are still pending. A dedicated workflow has been prepared for both Mac architectures; it fails without real credentials and checks the publisher team, hardened runtime, notarization ticket and Gatekeeper assessment before a release can be described as verified.[^21][^22]
 
 Windows needs a separate signing path. SignPath Foundation is a promising free option for an eligible open-source project, but acceptance, MFA, maintainer roles, artifact configuration and signing approval are requirements, not assumptions. An application draft is prepared; it has not been submitted, and Plainmark does not claim Foundation sponsorship. The signed application executable and enclosing installer must both be verified.[^23]
 
@@ -122,7 +122,7 @@ Code signing does not guarantee that every Windows machine shows no warning. Mic
 
 | Platform | Prepared in this update | Still required before a trusted-release claim |
 | --- | --- | --- |
-| macOS Apple Silicon and Intel | Signing workflow, identity checks, notarization and Gatekeeper verification | Active account, Developer ID certificate, secure credentials, successful runs and fresh-download installation checks |
+| macOS Apple Silicon and Intel | Developer ID certificate verified locally; signing workflow, notarization and Gatekeeper checks prepared | Protected CI signing credentials, successful signed/notarized runs and fresh-download installation checks |
 | Windows x64 | Signing application draft and timestamped-publisher verification script | Provider approval/account, signing the inner executable and installer, real Windows installation checks |
 | Linux x64 | Debian/AppImage launch integration checks, checksum and provenance generation | Installation on supported distributions; any future store/repository review |
 
