@@ -9,16 +9,20 @@
 
 **[Visit the Plainmark website](https://markdown.eksaar.com)** · [Download the latest preview release](https://github.com/gopalasubramanium/plainmark/releases) · [Report a bug](https://github.com/gopalasubramanium/plainmark/issues) · [Contribute](CONTRIBUTING.md)
 
-**Windows: [Get Plainmark free from Microsoft Store](https://apps.microsoft.com/detail/9pb6h8z02k0g).** The public listing is named **Plainmark Markdown Editor**, published by **Gopala Subramanium**.
+**Windows v0.4.0: [Get Plainmark free from Microsoft Store](https://apps.microsoft.com/detail/9pb6h8z02k0g).** The public listing is named **Plainmark Markdown Editor**, published by **Gopala Subramanium**.
 
-Direct GitHub downloads remain **[v0.3.3](https://github.com/gopalasubramanium/plainmark/releases/tag/v0.3.3)**, a preview. Choose the installer for your computer:
+Versions currently differ by download channel. The Store edition is newer; the direct installers and Homebrew still offer the earlier preview.
 
-| Platform | Download | Target |
+| Download channel | App version | Availability |
 | --- | --- | --- |
-| Windows | Microsoft Store (recommended), or unsigned preview `.exe` | Windows 10/11, x64 |
-| macOS, Apple Silicon | `aarch64.dmg` | macOS 11+ |
-| macOS, Intel | `x64.dmg` | macOS 11+ |
-| Linux | `.AppImage` or `.deb` | x64; built on Ubuntu 22.04 |
+| [Microsoft Store — Windows x64](https://apps.microsoft.com/detail/9pb6h8z02k0g) | **0.4.0** | Available; recommended for Windows 10/11 |
+| [Direct Windows EXE](https://github.com/gopalasubramanium/plainmark/releases/tag/v0.3.3) | 0.3.3 preview | Available; unsigned |
+| [Direct Mac DMG — Apple Silicon / Intel](https://github.com/gopalasubramanium/plainmark/releases/tag/v0.3.3) | 0.3.3 preview | Available; signed and notarized; macOS 11+ |
+| [Homebrew for Mac](https://github.com/gopalasubramanium/homebrew-plainmark) | 0.3.3 preview | Available; uses the same Mac DMGs |
+| [Direct Linux AppImage / .deb — x64](https://github.com/gopalasubramanium/plainmark/releases/tag/v0.3.3) | 0.3.3 preview | Available; built on Ubuntu 22.04 |
+| Mac App Store | 0.4.0 submitted | Awaiting review; no public download confirmed |
+
+Windows package details show **0.4.0.0**; this is the same app version **0.4.0**, with the additional package revision field. Store publication does not automatically publish matching GitHub installers. See [release/version policy](docs/RELEASING.md#versions-across-download-channels) and [distribution status](docs/DISTRIBUTION-STATUS.md).
 
 Windows uses WebView2, and Linux requires WebKitGTK 4.1. AppImage compatibility depends on the host distribution and its system libraries. See [Tauri’s platform prerequisites](https://v2.tauri.app/start/prerequisites/).
 

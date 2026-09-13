@@ -4,7 +4,7 @@ The `Release` workflow builds Windows x64, Linux x64, and Apple Silicon/Intel ma
 
 ## Prepare
 
-1. Update the version consistently in `package.json`, `src-tauri/Cargo.toml`, `src-tauri/tauri.conf.json`, and the UI version text. Refresh lockfiles as needed.
+1. Update the version consistently in `package.json`, `src-tauri/Cargo.toml`, `src-tauri/tauri.conf.json`, and the example version in the Windows package manifest. The Windows packager derives the actual MSIX version from `package.json`. The UI also reads the version from `package.json`; do not add a separately maintained UI version. Refresh lockfiles as needed.
 2. Run the checks in the README. The release pipeline runs its own build/tests before packaging.
 3. Check the release notes, known limitations, and third-party notices.
 4. Commit and push to `main`, then push the matching tag:
@@ -34,7 +34,7 @@ The initial pipeline uses ad-hoc macOS signing and unsigned Windows packages. It
 
 Before changing this, follow the official [macOS signing](https://v2.tauri.app/distribute/sign/macos/) and [Windows signing](https://v2.tauri.app/distribute/sign/windows/) guides. Store signing credentials as GitHub Actions secrets, never in the repository. Do not remove platform security protections to make an unsigned build appear trusted.
 
-There is no in-app updater or background version check. Users obtain updates explicitly from GitHub Releases.
+There is no in-app updater or background version check. Direct-download users obtain updates from GitHub Releases; Homebrew updates its cask from verified Mac releases, and Store editions use their store’s update mechanism.
 
 ## Security and publisher signing
 
@@ -49,3 +49,13 @@ The dedicated signed-macOS workflow can replace Mac artifacts only in an unpubli
 ## Homebrew synchronization
 
 The official `gopalasubramanium/homebrew-plainmark` tap stores installation metadata, not application source. Its scheduled workflow checks public releases every four hours and can also be started manually. Before changing cask version/hash values it verifies both Mac artifacts, GitHub attestations, the separately attested source-binding manifests, Developer ID/team, notarization, stapling and Gatekeeper, then installs/audits the cask. Keep the signing workflow’s per-architecture provenance JSON assets with each future Mac release. A missing proof, changed hash for an existing version, or failed validation stops synchronization. The immutable v0.3.3 preview remains the current cask until a newer complete verified release is published.
+
+## Versions across download channels
+
+Use one app version (`major.minor.patch`) for a release across Windows, macOS and Linux. Windows MSIX adds a fourth numeric package revision: app version `0.4.0` is packaged as `0.4.0.0`. Keep a store's build/revision identifier separate from the app version shown to users.
+
+Prepare future releases from one reviewed source tag, with platform-specific packaging and signing. Run `scripts/check-version.mjs` to verify the package/Tauri/Cargo versions and release tag. The Windows packaging workflow derives the packaged manifest version from the app version and validates the MSIX using MakeAppx. Record each artifact's source commit, version, signature status and publication status. A later app-code fix must receive a new app version; never move a published tag or relabel older binaries to look current.
+
+Store reviews and direct-download publishing can finish at different times. Show the version beside each actual download, and keep “submitted,” “available,” and “preview” distinct. Do not show a single preview/version badge above downloads that have different versions. Store approval does not by itself make every platform's release stable. Before publishing a new release, update the website cards, README channel table and distribution record together. Homebrew advances only after the matching signed and notarized GitHub Mac assets pass its existing verification workflow.
+
+The current transition is explicit: Microsoft Store's live submission is `0.4.0.0`, corresponding to app `0.4.0`; the Apple submission is `0.4.0`; public GitHub installers and Homebrew remain `0.3.3` preview. These existing Store submissions came from the platform-readiness commits documented in their packaging records, so they are not represented as a single tagged cross-platform release. Publication of matching direct installers requires a separate built, tested and signed release.
