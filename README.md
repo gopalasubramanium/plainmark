@@ -9,18 +9,20 @@
 
 **[Visit the Plainmark website](https://markdown.eksaar.com)** · [Download the latest preview release](https://github.com/gopalasubramanium/plainmark/releases) · [Report a bug](https://github.com/gopalasubramanium/plainmark/issues) · [Contribute](CONTRIBUTING.md)
 
-The current release is **[v0.3.3](https://github.com/gopalasubramanium/plainmark/releases/tag/v0.3.3)**, a preview. Choose the installer for your computer:
+**Windows: [Get Plainmark free from Microsoft Store](https://apps.microsoft.com/detail/9pb6h8z02k0g).** The public listing is named **Plainmark Markdown Editor**, published by **Gopala Subramanium**.
+
+Direct GitHub downloads remain **[v0.3.3](https://github.com/gopalasubramanium/plainmark/releases/tag/v0.3.3)**, a preview. Choose the installer for your computer:
 
 | Platform | Download | Target |
 | --- | --- | --- |
-| Windows | `.exe` installer | Windows 10/11, x64 |
+| Windows | Microsoft Store (recommended), or unsigned preview `.exe` | Windows 10/11, x64 |
 | macOS, Apple Silicon | `aarch64.dmg` | macOS 11+ |
 | macOS, Intel | `x64.dmg` | macOS 11+ |
 | Linux | `.AppImage` or `.deb` | x64; built on Ubuntu 22.04 |
 
 Windows uses WebView2, and Linux requires WebKitGTK 4.1. AppImage compatibility depends on the host distribution and its system libraries. See [Tauri’s platform prerequisites](https://v2.tauri.app/start/prerequisites/).
 
-**v0.3.3** has Developer ID-signed, Apple-notarized Mac apps and DMGs for both architectures. The Windows installer is still unsigned; trusted Windows signing is pending. Check the [Code signing policy](docs/SIGNING.md) for the exact release before downloading. You can also build directly from source below.
+**v0.3.3** has Developer ID-signed, Apple-notarized Mac apps and DMGs for both architectures. The separate Windows EXE on GitHub is still unsigned; its signing application is pending. Microsoft Store is the recommended Windows installation route. Check the [Code signing policy](docs/SIGNING.md) for the exact download. You can also build directly from source below.
 
 Mac users can also install through the [official publisher-maintained Homebrew tap](https://github.com/gopalasubramanium/homebrew-plainmark):
 
@@ -28,7 +30,7 @@ Mac users can also install through the [official publisher-maintained Homebrew t
 brew install --cask gopalasubramanium/plainmark/plainmark@preview
 ```
 
-This uses the same signed and notarized preview downloads, with a checksum for each architecture. App Store distribution is being prepared; see [distribution status](docs/DISTRIBUTION-STATUS.md).
+This uses the same signed and notarized Mac preview downloads, with a checksum for each architecture. Microsoft Store is live; the Mac App Store submission is awaiting review. See [distribution status](docs/DISTRIBUTION-STATUS.md).
 
 ## Your words, without the noise
 

@@ -18,4 +18,6 @@ Once GitHub issues the certificate, enable **Enforce HTTPS** in the repository's
 
 After publishing a release, update the version, release-notes URL, download filenames, and supported-platform details in `website/index.html`. Link only to uploaded public release assets. Keep the preview/signing notice accurate. Refresh `website/assets/screenshot.png` from `docs/screenshot.png` when the app appearance changes.
 
+The primary Windows button links to the [public Microsoft Store listing](https://apps.microsoft.com/detail/9pb6h8z02k0g), verified 13 September 2026. Keep its availability separate from direct GitHub release versions: publishing a Store edition does not create a GitHub release or update the Mac Homebrew cask. The secondary Windows EXE must retain its unsigned-preview label until that exact direct asset is signed. Store links use plain anchors with no tracking embeds.
+
 Preview `website/` with any local static HTTP server. Check the desktop and mobile layout, keyboard focus, in-page links, and installer links before publishing.

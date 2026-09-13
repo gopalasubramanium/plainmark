@@ -2,12 +2,12 @@
 
 Registered 12 September 2026 as **Plainmark Markdown Editor**, a Microsoft-hosted MSIX app.
 
-- Store ID: `9PB6H8Z02K0G` (reserved; not a public listing yet).
+- Store ID: `9PB6H8Z02K0G`; [public Microsoft Store listing](https://apps.microsoft.com/detail/9pb6h8z02k0g), verified 13 September 2026.
 - Product identity: `GopalaSubramanium.PlainmarkMarkdownEditor`.
 - Publisher: `CN=CB824A42-D5E4-447F-BB19-DEE3229EF8E6`.
 - Publisher display name: `Gopala Subramanium`.
 - Package family: `GopalaSubramanium.PlainmarkMarkdownEditor_4574vfc7ec9nr`.
-- Submission draft: `1152921505701877168`.
+- Submission: `1152921505701877168`.
 
 The identity comes directly from Partner Center. Never substitute a made-up identity or a Developer ID/SignPath certificate name. The `Microsoft Store package` workflow builds the app from its checkout, runs the frontend/native tests and uses Windows SDK MakeAppx to validate and package it. The four-part package version follows the app version. The C runtime is statically linked for this build. No Electron runtime is bundled.
 
@@ -15,7 +15,7 @@ The submitted 0.4.0.0 x64 package comes from [build 34701120809](https://github.
 
 Partner Center accepted the package; Windows Desktop alone is enabled, with automatic expansion to future device families off. Free worldwide pricing, Productivity category, privacy/support links, publisher-approved IARC age ratings, actual Windows screenshot and GPL additional terms are saved. The private review notes and runFullTrust explanation accurately describe local files, WebView2 and isolated HTML execution. Public phone/address fields are blank; automatic OneDrive app-data backup and game broadcast declarations are off.
 
-**Submitted for certification on 12 September 2026 (UTC).** Partner Center confirms **In certification**, with pre-processing in progress. It will publish automatically after approval. Microsoft still needs to approve runFullTrust; no public Store availability or Microsoft signature is claimed yet.
+**Public Microsoft Store listing verified on 13 September 2026.** [Plainmark Markdown Editor](https://apps.microsoft.com/detail/9pb6h8z02k0g) is listed under **Gopala Subramanium**, in Productivity, with its free/open-source description and actual Windows screenshot. It was submitted for certification on 12 September 2026 (UTC), with automatic publication selected. The public page confirms publication; the Store-delivered package version, signature and installation have not yet been independently inspected on Windows.
 
 The resulting CI artifact is an **unsigned submission candidate**, not a trusted installer. Microsoft signs Store packages after certification. The existing direct NSIS installer is a separate distribution path and remains unsigned pending the SignPath application.
 
