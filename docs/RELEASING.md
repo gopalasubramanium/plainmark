@@ -2,6 +2,8 @@
 
 The `Release` workflow builds Windows x64, Linux x64, and Apple Silicon/Intel macOS installers and attaches them to a **draft GitHub prerelease**. A failed matrix job leaves the release as a draft; nothing is automatically promoted to stable.
 
+Follow the accepted [public release baseline policy](RELEASE-POLICY.md): v0.4.0 is the first baseline, with one current app version across recommended downloads. Earlier versions remain release history. Version alignment never replaces artifact verification or store approval.
+
 ## Prepare
 
 1. Update the version consistently in `package.json`, `src-tauri/Cargo.toml`, `src-tauri/tauri.conf.json`, and the example version in the Windows package manifest. The Windows packager derives the actual MSIX version from `package.json`. The UI also reads the version from `package.json`; do not add a separately maintained UI version. Refresh lockfiles as needed.
@@ -56,6 +58,6 @@ Use one app version (`major.minor.patch`) for a release across Windows, macOS an
 
 Prepare future releases from one reviewed source tag, with platform-specific packaging and signing. Run `scripts/check-version.mjs` to verify the package/Tauri/Cargo versions and release tag. The Windows packaging workflow derives the packaged manifest version from the app version and validates the MSIX using MakeAppx. Record each artifact's source commit, version, signature status and publication status. A later app-code fix must receive a new app version; never move a published tag or relabel older binaries to look current.
 
-Store reviews and direct-download publishing can finish at different times. Show the version beside each actual download, and keep “submitted,” “available,” and “preview” distinct. Do not show a single preview/version badge above downloads that have different versions. Store approval does not by itself make every platform's release stable. Before publishing a new release, update the website cards, README channel table and distribution record together. Homebrew advances only after the matching signed and notarized GitHub Mac assets pass its existing verification workflow.
+Store reviews and direct-download publishing can finish at different times. Keep “submitted,” “available,” and “preview” distinct. The main download choices must all offer the current baseline; place any previous-version fallback in clearly labeled release history. Store approval does not by itself make every platform's release stable. Before publishing a new release, update the website cards, README channel table and distribution record together. Homebrew advances only after the matching signed and notarized GitHub Mac assets pass its existing verification workflow.
 
 The current transition is explicit: Microsoft Store's live submission is `0.4.0.0`, corresponding to app `0.4.0`; the Apple submission is `0.4.0`; public GitHub installers and Homebrew remain `0.3.3` preview. These existing Store submissions came from the platform-readiness commits documented in their packaging records, so they are not represented as a single tagged cross-platform release. Publication of matching direct installers requires a separate built, tested and signed release.
