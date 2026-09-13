@@ -8,6 +8,8 @@ The Microsoft Store edition is already app version 0.4.0 (MSIX package 0.4.0.0),
 
 This establishes a release baseline, not a promise that every operating-system configuration or workflow has been tested. Release maturity, known limitations, signing and store review remain separate facts. The first 0.4.0 GitHub release stays an early release/prerelease until the documented platform-readiness criteria are met. Do not call it a stable 1.0 product or imply approval by stores that have not approved it.
 
+Coordinating channels adds release work, and stores can approve updates at different times. Do not delay a necessary security fix solely for a store review: publish verified channels at the new baseline, and clearly label the remaining channels as pending or previous-version fallbacks.
+
 ## Mandatory rules
 
 1. **One current public app version.** The website, README, release notes and recommended download channels must identify the same baseline, starting with 0.4.0. Package-specific build/revision fields may differ; Windows 0.4.0.0 is displayed to users as app 0.4.0.
@@ -20,6 +22,6 @@ This establishes a release baseline, not a promise that every operating-system c
 
 ## Initial adoption
 
-The Microsoft Store package is verified as 0.4.0.0 in the live Store presence. Apple has received 0.4.0 for review. Matching GitHub installers and the Homebrew update must complete the release process before they can be presented as available. Until that publication succeeds, 0.3.3 remains accurately identified as the previous direct-download preview; a policy decision alone does not change an installer.
+The Microsoft Store package is verified as 0.4.0.0 in the live Store presence. Apple has received 0.4.0 for review. Matching v0.4.0 GitHub installers are published, and Homebrew synchronized to the same verified Mac downloads. The website and README recommend the 0.4.0 baseline. Earlier releases, including 0.3.3, remain unchanged in release history. See [distribution evidence](DISTRIBUTION-STATUS.md) for build, signing, installation and synchronization results.
 
 The Windows Store route remains the recommended Windows installation. A separate direct EXE must continue to disclose its unsigned status until that exact asset has a verified publisher signature. Keep the app free, without ads, tracking, paid features or required app accounts.

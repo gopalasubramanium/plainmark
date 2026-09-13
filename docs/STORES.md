@@ -1,6 +1,6 @@
 # Store distribution readiness
 
-Updated 13 September 2026 against the public v0.3.3 GitHub preview and 0.4.0 Store submissions. **[Microsoft Store is now public](https://apps.microsoft.com/detail/9pb6h8z02k0g)**; Apple was last confirmed Waiting for Review. See the separate [distribution status](DISTRIBUTION-STATUS.md) for exact submission evidence and the published Homebrew channel. Official editions should remain free, with no ads, paid features, accounts in the app, or telemetry. GitHub downloads remain a useful independent distribution channel.
+Updated 13 September 2026 against the public v0.4.0 baseline and matching Store app versions. The GitHub release remains an early release under the [release policy](RELEASE-POLICY.md). **[Microsoft Store is now public](https://apps.microsoft.com/detail/9pb6h8z02k0g)**; Apple was last confirmed Waiting for Review. See the separate [distribution status](DISTRIBUTION-STATUS.md) for exact submission evidence and the published Homebrew channel. Official editions should remain free, with no ads, paid features, accounts in the app, or telemetry. GitHub downloads remain a useful independent distribution channel.
 
 ## Microsoft Store: first priority
 
@@ -30,7 +30,7 @@ Flathub distributes Flatpak applications through its site and compatible graphic
 
 A GNOME 50 Flatpak manifest, checksummed vendored Node/Rust sources, AppStream metadata, icon and desktop entry now build successfully offline. The installed app visibly opened a file through the document portal, but its automated WebKit accessibility-tree check remains unresolved. Existing AppImage and Debian packages do not establish Flatpak compatibility. Prefer access to user-selected files and folders over blanket home-directory permissions. Exercise local images, folder navigation, saves, printing and Open with inside the sandbox.
 
-Flathub currently requires stable software for new submissions and does not accept new beta-repository submissions. v0.3.3 is explicitly a preview. Its current policy also requires disclosure of the parts and approximate extent of AI-generated material. AI agents may not open or automate submission PRs or write their commit messages, descriptions or review interactions. A human maintainer must handle those submissions and responses. This document is an internal readiness assessment, not Flathub submission text. [Current requirements](https://docs.flathub.org/docs/for-app-authors/requirements).
+Flathub currently requires stable software for new submissions and does not accept new beta-repository submissions. v0.4.0 establishes the public version baseline but remains an early GitHub prerelease; numbering alone does not meet stable-release readiness. Its current policy also requires disclosure of the parts and approximate extent of AI-generated material. AI agents may not open or automate submission PRs or write their commit messages, descriptions or review interactions. A human maintainer must handle those submissions and responses. This document is an internal readiness assessment, not Flathub submission text. [Current requirements](https://docs.flathub.org/docs/for-app-authors/requirements).
 
 ## Snap Store: additional Linux channel
 

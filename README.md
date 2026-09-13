@@ -7,34 +7,32 @@
 
 ## Get Plainmark
 
-**[Visit the Plainmark website](https://markdown.eksaar.com)** · [Download the latest preview release](https://github.com/gopalasubramanium/plainmark/releases) · [Report a bug](https://github.com/gopalasubramanium/plainmark/issues) · [Contribute](CONTRIBUTING.md)
+**[Visit the Plainmark website](https://markdown.eksaar.com)** · [Download v0.4.0](https://github.com/gopalasubramanium/plainmark/releases/tag/v0.4.0) · [Report a bug](https://github.com/gopalasubramanium/plainmark/issues) · [Contribute](CONTRIBUTING.md)
 
-**Windows v0.4.0: [Get Plainmark free from Microsoft Store](https://apps.microsoft.com/detail/9pb6h8z02k0g).** The public listing is named **Plainmark Markdown Editor**, published by **Gopala Subramanium**.
-
-Versions currently differ by download channel. The Store edition is newer; the direct installers and Homebrew still offer the earlier preview.
+**v0.4.0 is Plainmark’s public baseline.** Recommended downloads use this app version; store approval and package signing are tracked separately. It is an early release with [known limitations](#small-by-design), not a claim of stable 1.0 readiness. See the accepted [release baseline rule](docs/RELEASE-POLICY.md).
 
 | Download channel | App version | Availability |
 | --- | --- | --- |
 | [Microsoft Store — Windows x64](https://apps.microsoft.com/detail/9pb6h8z02k0g) | **0.4.0** | Available; recommended for Windows 10/11 |
-| [Direct Windows EXE](https://github.com/gopalasubramanium/plainmark/releases/tag/v0.3.3) | 0.3.3 preview | Available; unsigned |
-| [Direct Mac DMG — Apple Silicon / Intel](https://github.com/gopalasubramanium/plainmark/releases/tag/v0.3.3) | 0.3.3 preview | Available; signed and notarized; macOS 11+ |
-| [Homebrew for Mac](https://github.com/gopalasubramanium/homebrew-plainmark) | 0.3.3 preview | Available; uses the same Mac DMGs |
-| [Direct Linux AppImage / .deb — x64](https://github.com/gopalasubramanium/plainmark/releases/tag/v0.3.3) | 0.3.3 preview | Available; built on Ubuntu 22.04 |
+| [Direct Windows EXE](https://github.com/gopalasubramanium/plainmark/releases/download/v0.4.0/Plainmark_0.4.0_x64-setup.exe) | 0.4.0 | Available; unsigned |
+| [Direct Mac DMG — Apple Silicon](https://github.com/gopalasubramanium/plainmark/releases/download/v0.4.0/Plainmark_0.4.0_aarch64.dmg) / [Intel](https://github.com/gopalasubramanium/plainmark/releases/download/v0.4.0/Plainmark_0.4.0_x64.dmg) | 0.4.0 | Available; signed and notarized; macOS 11+ |
+| [Homebrew for Mac](https://github.com/gopalasubramanium/homebrew-plainmark) | 0.4.0 | Available; uses the same Mac DMGs |
+| [Linux AppImage](https://github.com/gopalasubramanium/plainmark/releases/download/v0.4.0/Plainmark_0.4.0_amd64.AppImage) / [.deb — x64](https://github.com/gopalasubramanium/plainmark/releases/download/v0.4.0/Plainmark_0.4.0_amd64.deb) | 0.4.0 | Available; built on Ubuntu 22.04 |
 | Mac App Store | 0.4.0 submitted | Awaiting review; no public download confirmed |
 
-Windows package details show **0.4.0.0**; this is the same app version **0.4.0**, with the additional package revision field. Store publication does not automatically publish matching GitHub installers. See [release/version policy](docs/RELEASING.md#versions-across-download-channels) and [distribution status](docs/DISTRIBUTION-STATUS.md).
+Windows package details show **0.4.0.0**; this is app version **0.4.0** with an additional package revision field. Earlier versions are preserved unchanged in [release history](https://github.com/gopalasubramanium/plainmark/releases). The [distribution record](docs/DISTRIBUTION-STATUS.md) identifies each channel’s exact source and verification evidence.
 
 Windows uses WebView2, and Linux requires WebKitGTK 4.1. AppImage compatibility depends on the host distribution and its system libraries. See [Tauri’s platform prerequisites](https://v2.tauri.app/start/prerequisites/).
 
-**v0.3.3** has Developer ID-signed, Apple-notarized Mac apps and DMGs for both architectures. The separate Windows EXE on GitHub is still unsigned; its signing application is pending. Microsoft Store is the recommended Windows installation route. Check the [Code signing policy](docs/SIGNING.md) for the exact download. You can also build directly from source below.
+The v0.4.0 Mac apps and DMGs are Developer ID-signed and Apple-notarized. The separate Windows EXE on GitHub is unsigned; its signing application is pending. Microsoft Store is the recommended Windows installation route. Check the [Code signing policy](docs/SIGNING.md) for the exact download. You can also build directly from source below.
 
-Mac users can also install through the [official publisher-maintained Homebrew tap](https://github.com/gopalasubramanium/homebrew-plainmark):
+Mac users can install through the official publisher-maintained Homebrew tap:
 
 ```sh
 brew install --cask gopalasubramanium/plainmark/plainmark@preview
 ```
 
-This uses the same signed and notarized Mac preview downloads, with a checksum for each architecture. Microsoft Store is live; the Mac App Store submission is awaiting review. See [distribution status](docs/DISTRIBUTION-STATUS.md).
+The cask’s `@preview` name identifies its early-release channel; its app version is **0.4.0**. It uses the same signed and notarized Mac downloads, with a checksum for each architecture.
 
 ## Your words, without the noise
 

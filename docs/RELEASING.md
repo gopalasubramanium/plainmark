@@ -12,8 +12,9 @@ Follow the accepted [public release baseline policy](RELEASE-POLICY.md): v0.4.0 
 4. Commit and push to `main`, then push the matching tag:
 
 ```sh
-git tag v0.1.0
-git push origin v0.1.0
+# Example for a future patch, after preparing and checking version 0.4.1:
+git tag v0.4.1
+git push origin v0.4.1
 ```
 
 You can also run the workflow manually against a version tag, using the Actions page. Run it against a tag, not `main`.
@@ -50,7 +51,7 @@ The dedicated signed-macOS workflow can replace Mac artifacts only in an unpubli
 
 ## Homebrew synchronization
 
-The official `gopalasubramanium/homebrew-plainmark` tap stores installation metadata, not application source. Its scheduled workflow checks public releases every four hours and can also be started manually. Before changing cask version/hash values it verifies both Mac artifacts, GitHub attestations, the separately attested source-binding manifests, Developer ID/team, notarization, stapling and Gatekeeper, then installs/audits the cask. Keep the signing workflow’s per-architecture provenance JSON assets with each future Mac release. A missing proof, changed hash for an existing version, or failed validation stops synchronization. The immutable v0.3.3 preview remains the current cask until a newer complete verified release is published.
+The official `gopalasubramanium/homebrew-plainmark` tap stores installation metadata, not application source. Its scheduled workflow checks public releases every four hours and can also be started manually. Before changing cask version/hash values it verifies both Mac artifacts, GitHub attestations, the separately attested source-binding manifests, Developer ID/team, notarization, stapling and Gatekeeper, then installs/audits the cask. Keep the signing workflow’s per-architecture provenance JSON assets with each future Mac release. A missing proof, changed hash for an existing version, or failed validation stops synchronization. The current cask is v0.4.0, synchronized from the published baseline after all checks passed. The `@preview` suffix names the installation channel; it is not a separate app version.
 
 ## Versions across download channels
 
@@ -60,4 +61,4 @@ Prepare future releases from one reviewed source tag, with platform-specific pac
 
 Store reviews and direct-download publishing can finish at different times. Keep “submitted,” “available,” and “preview” distinct. The main download choices must all offer the current baseline; place any previous-version fallback in clearly labeled release history. Store approval does not by itself make every platform's release stable. Before publishing a new release, update the website cards, README channel table and distribution record together. Homebrew advances only after the matching signed and notarized GitHub Mac assets pass its existing verification workflow.
 
-The current transition is explicit: Microsoft Store's live submission is `0.4.0.0`, corresponding to app `0.4.0`; the Apple submission is `0.4.0`; public GitHub installers and Homebrew remain `0.3.3` preview. These existing Store submissions came from the platform-readiness commits documented in their packaging records, so they are not represented as a single tagged cross-platform release. Publication of matching direct installers requires a separate built, tested and signed release.
+The initial baseline is now published: Microsoft Store's live package is `0.4.0.0`, corresponding to app `0.4.0`; the Apple submission is `0.4.0`; public GitHub installers and Homebrew are `0.4.0`. The GitHub release remains an early release. These initial Store submissions came from the platform-readiness commits documented in their packaging records, before the later baseline tag `67a98521c49d1c77605a43b21eacfe17e285ed54`; preserve those exact source records. Future releases follow the single reviewed tag rule.
