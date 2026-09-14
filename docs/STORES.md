@@ -1,6 +1,6 @@
 # Store distribution readiness
 
-Updated 13 September 2026 against the public v0.4.0 baseline and matching Store app versions. The GitHub release remains an early release under the [release policy](RELEASE-POLICY.md). **[Microsoft Store is now public](https://apps.microsoft.com/detail/9pb6h8z02k0g)**; Apple was last confirmed Waiting for Review. See the separate [distribution status](DISTRIBUTION-STATUS.md) for exact submission evidence and the published Homebrew channel. Official editions should remain free, with no ads, paid features, accounts in the app, or telemetry. GitHub downloads remain a useful independent distribution channel.
+Updated 15 September 2026 against the public v0.4.0 baseline and matching Store app versions. The GitHub release remains an early release under the [release policy](RELEASE-POLICY.md). **[Microsoft Store is now public](https://apps.microsoft.com/detail/9pb6h8z02k0g)**; Apple is Waiting for Review after its metadata-only resubmission on 15 September. See the separate [distribution status](DISTRIBUTION-STATUS.md) for exact submission evidence and the published Homebrew channel. Official editions should remain free, with no ads, paid features, accounts in the app, or telemetry. GitHub downloads remain a useful independent distribution channel.
 
 ## Microsoft Store: first priority
 
@@ -14,7 +14,7 @@ Pricing is zero in all selected markets, age ratings are complete after the publ
 
 ## Mac App Store: separate build and review
 
-Version/build 0.4.0 was delivered through Transporter and submitted for review on 13 September 2026 at 00:57 Singapore time. App Store Connect reports Waiting for Review for submission `2e5cbcc0-112c-4948-bf50-5d528fd2e9a7`. Free pricing and automatic release after approval are selected. See [the package and validation record](../packaging/macos/README.md).
+Version/build 0.4.0 was delivered through Transporter and submitted for review on 13 September 2026 at 00:57 Singapore time. After a Guideline 2.3.7 rejection concerning the subtitle, the price reference was removed and the same build was resubmitted on 15 September at 07:19 Singapore time. See [review history](APPLE-REVIEW-HISTORY.md). App Store Connect reports Waiting for Review for submission `2e5cbcc0-112c-4948-bf50-5d528fd2e9a7`. Free pricing and automatic release after approval are selected. See [the package and validation record](../packaging/macos/README.md).
 
 The active Apple membership covers the account prerequisite. Existing Developer ID-signed and notarized DMGs are for direct distribution; they are not Mac App Store submissions. The Store edition needs its own signing/provisioning configuration, sandbox entitlements, signed submission package, App Store Connect record and review. [Tauri App Store packaging](https://v2.tauri.app/distribute/app-store/).
 

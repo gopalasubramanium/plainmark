@@ -1,13 +1,15 @@
 # Plainmark listing material
 
-Prepared 12 September 2026 for the actual v0.3.3 desktop preview. Use only features verified in the edition being submitted. This is reusable product metadata, not a claim of store acceptance. It is not a Flathub submission, PR description or review response.
+Updated 15 September 2026 for the v0.4.0 public baseline and Store editions. Use only features verified in the edition being submitted. This is reusable product metadata, not a claim of store acceptance. It is not a Flathub submission, PR description or review response.
 
 ## Common fields
 
 | Field | Value |
 | --- | --- |
 | Name | Plainmark |
-| Short description | Free, local Markdown viewer and visual editor |
+| Short description | Local Markdown viewer and visual editor |
+| Apple subtitle | Local Markdown, visual editing |
+| Apple promotional text | An open-source home for everyday Markdown. Work with local files, edit visually, and render diagrams and math. |
 | Publisher / creator | Gopala Subramanium |
 | Website | https://markdown.eksaar.com/ |
 | Source | https://github.com/gopalasubramanium/plainmark |
@@ -17,10 +19,14 @@ Prepared 12 September 2026 for the actual v0.3.3 desktop preview. Use only featu
 | Price | Free, with no in-app purchases, subscriptions or ads |
 | Category | Productivity / Markdown editor / Text editor |
 | Language | English |
-| Current version | 0.3.3, public preview |
+| Current version | 0.4.0; availability and maturity recorded per channel |
 | Desktop platforms | Windows 10/11 x64, macOS 11+ Apple Silicon/Intel, Linux x64 |
 | Application identifier | io.github.gopalasubramanium.plainmark |
 | Discoverability keywords | markdown, editor, viewer, visual editing, local files, offline, mermaid, math |
+
+## Apple metadata rule
+
+Keep pricing language such as “free,” “discount,” or subscription-price claims out of Apple app names, subtitles and keywords. Review screenshots and previews for the same restriction, and use feature-focused promotional text. Describe the free/open-source commitment in the app description and configure the actual price in Pricing and Availability. Check every configured localization before submitting. See [Apple Guideline 2.3.7](https://developer.apple.com/app-store/review/guidelines/#accurate-metadata) and [the review history](APPLE-REVIEW-HISTORY.md). A metadata-only correction can reuse the same build when Apple permits it; it does not change the public app baseline.
 
 ## Description
 
