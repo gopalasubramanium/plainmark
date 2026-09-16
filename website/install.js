@@ -6,8 +6,12 @@
   const controls = document.getElementById('install-controls');
   const hint = document.getElementById('install-hint');
   const status = document.getElementById('install-status');
+  const installer = document.querySelector('.installer');
+  const methods = Array.from(document.querySelectorAll('[data-method-choice]'));
   const options = Array.from(document.querySelectorAll('.install-option'));
-  if (!select || !controls || !hint || !status || !options.length) return;
+  let method = 'download';
+  let revision = 0;
+  if (!select || !controls || !hint || !status || !installer || !methods.length || !options.length) return;
 
   const ua = navigator.userAgent || '';
   const platform = navigator.platform || '';
@@ -22,23 +26,36 @@
     else if (/Linux|X11/i.test(ua + platform) && !/arm|aarch64|BSD/i.test(ua + platform)) suggested = 'linux';
   }
 
-  function show(platformName) {
-    for (const option of options) option.hidden = option.dataset.platform !== platformName;
+  function show() {
+    revision += 1;
+    for (const option of options) {
+      option.hidden = option.dataset.platform !== select.value;
+      for (const panel of option.querySelectorAll('[data-method]')) {
+        panel.hidden = panel.dataset.method !== method;
+      }
+    }
+    for (const button of methods) {
+      button.setAttribute('aria-pressed', String(button.dataset.methodChoice === method));
+    }
+    hint.hidden = Boolean(select.value);
     status.textContent = '';
   }
 
   select.value = suggested;
-  show(suggested);
-  hint.textContent = suggested
-    ? 'Suggested for your computer. You can choose another option.'
-    : 'Plainmark is a desktop app. Choose the computer you want to install it on.';
+  installer.classList.add('enhanced');
+  for (const option of options) {
+    option.querySelector('.install-label').hidden = true;
+    option.querySelector('.command-option').open = true;
+  }
+  show();
   controls.hidden = false;
-  select.addEventListener('change', () => {
-    show(select.value);
-    hint.textContent = select.value
-      ? 'Copy the command, then paste it into your terminal.'
-      : 'Choose the computer you want to install Plainmark on.';
-  });
+  select.addEventListener('change', show);
+  for (const button of methods) {
+    button.addEventListener('click', () => {
+      method = button.dataset.methodChoice;
+      show();
+    });
+  }
 
   for (const option of options) {
     const button = option.querySelector('button');
@@ -47,12 +64,13 @@
     button.hidden = false;
     button.setAttribute('aria-label', `Copy ${pre.getAttribute('aria-label')}`);
     button.addEventListener('click', async () => {
-      const selectedPlatform = select.value;
+      const copyRevision = revision;
+      status.textContent = '';
       try {
         await navigator.clipboard.writeText(code.textContent);
-        if (select.value === selectedPlatform) status.textContent = 'Copied. Paste into your terminal to continue.';
+        if (revision === copyRevision) status.textContent = 'Copied. Paste into your terminal to continue.';
       } catch {
-        if (select.value !== selectedPlatform) return;
+        if (revision !== copyRevision) return;
         // Clipboard access can be denied. Keep the exact visible command selectable.
         const range = document.createRange();
         range.selectNodeContents(code);

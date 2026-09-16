@@ -28,7 +28,7 @@ Windows uses WebView2, and Linux requires WebKitGTK 4.1. AppImage compatibility 
 
 The v0.4.0 Mac apps and DMGs are Developer ID-signed and Apple-notarized. The alternative Windows EXE on GitHub remains unsigned. SignPath declined the Foundation application on 16 September because the project does not yet have sufficient public adoption and visibility. Microsoft Store is the recommended Windows installation route and handles its own package signing without SignPath. Check the [Code signing policy](docs/SIGNING.md) for the exact download. You can also build directly from source below.
 
-The [website](https://markdown.eksaar.com/) suggests a terminal command for your computer, with a copy button and a manual platform choice.
+The [website](https://markdown.eksaar.com/) suggests a download for your computer. Switch to “Use a command” in the same install area for a copyable terminal command; you can choose another platform at any time.
 
 Windows users with WinGet can install the Microsoft Store edition:
 
