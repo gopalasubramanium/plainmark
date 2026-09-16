@@ -5,3 +5,26 @@
 @media(max-width:560px){.header{padding-block:18px}.brand{font-size:1.4rem}.brand img{width:31px}.header nav{gap:18px}.header nav a{font-size:.875rem}.hero .eyebrow{font-size:.8125rem;letter-spacing:.08em}.intro{font-size:1.0625rem}.actions{gap:20px}.preview figcaption{display:block}.preview figcaption span{display:block}.essentials{grid-template-columns:1fr;gap:29px}.number{float:left;margin:4px 16px 0 0}.essentials h2,.essentials p{margin-left:36px}.download-card{display:block;padding:24px}.download-card p{margin-bottom:18px}.download-card .button{font-size:.9375rem}.closing{grid-template-columns:1fr;gap:25px}.footer nav{gap:13px 22px}}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
 .footer .creator-note { max-width:430px; margin-top:5px; font-size:.8125rem; }
+
+/* A local, progressively enhanced install helper. Downloads work without it. */
+[hidden] { display:none !important; }
+.visually-hidden { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip-path:inset(50%); white-space:nowrap; border:0; }
+.quick-install { max-width:760px; margin-top:32px; padding:20px; border:1px solid var(--line); border-radius:10px; background:#fff9; }
+.install-heading { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px 20px; }
+.install-heading h2 { margin:0; font-size:1rem; font-weight:600; letter-spacing:-.02em; }
+#install-controls { min-width:0; max-width:100%; }
+#install-platform { max-width:100%; min-height:44px; padding:8px 10px; border:1px solid var(--line); border-radius:6px; color:inherit; background:#fff; font:inherit; font-size:.8125rem; }
+.install-hint,.install-note,.install-status { color:var(--muted); font-size:.8125rem; line-height:1.6; }
+.install-hint { margin:10px 0 14px; }
+.install-label { margin:0 0 8px; font-size:.8125rem; font-weight:600; }
+.install-command { display:flex; align-items:stretch; min-width:0; border:1px solid var(--line); border-radius:7px; background:#f1f2eb; }
+.install-command pre { flex:1; min-width:0; overflow-x:auto; margin:0; padding:14px; white-space:pre; scrollbar-width:thin; }
+.install-command code { font:400 .8125rem/1.7 ui-monospace,SFMono-Regular,Consolas,monospace; }
+.copy-command { flex-shrink:0; align-self:center; min-height:44px; margin:4px; padding:8px 13px; border:1px solid var(--line); border-radius:5px; font:inherit; font-size:.8125rem; font-weight:600; background:#fff; color:inherit; cursor:pointer; }
+.copy-command:hover { color:var(--accent); border-color:var(--accent); }
+.quick-install :is(button,select,pre):focus-visible { outline:3px solid var(--accent); outline-offset:3px; }
+.install-note { margin:10px 0 0; }
+.install-option + .install-option { margin-top:20px; }
+.install-option[hidden] + .install-option { margin-top:0; }
+.install-status { min-height:1.6em; margin:8px 0 -4px; }
+@media(max-width:560px) { .quick-install { padding:16px; } .install-heading { align-items:flex-start; flex-direction:column; gap:8px; } }

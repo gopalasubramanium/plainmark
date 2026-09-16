@@ -14,6 +14,7 @@
     <link rel="canonical" href="https://markdown.eksaar.com/">
     <link rel="icon" type="image/svg+xml" href="assets/mark.svg">
     <link rel="stylesheet" href="style.css">
+    <script src="install.js" defer></script>
   </head>
   <body>
     <a class="skip" href="#main">Skip to content</a>
@@ -34,6 +35,43 @@
           <a class="text-link" href="https://github.com/gopalasubramanium/plainmark">Explore the source <span aria-hidden="true">↗</span></a>
         </div>
         <p class="promise">No accounts. No ads. No tracking. Always free.</p>
+        <section class="quick-install" aria-labelledby="install-heading">
+          <div class="install-heading">
+            <h2 id="install-heading">Prefer a terminal?</h2>
+            <div id="install-controls" hidden>
+              <label class="visually-hidden" for="install-platform">Installation platform</label>
+              <select id="install-platform">
+                <option value="">Choose your computer</option>
+                <option value="windows">Windows · WinGet</option>
+                <option value="macos">macOS · Homebrew</option>
+                <option value="linux">Linux · AppImage (x64)</option>
+                <option value="debian">Debian / Ubuntu · .deb (x64)</option>
+              </select>
+            </div>
+          </div>
+          <p class="install-hint" id="install-hint">Choose the command for your computer and paste it into a terminal.</p>
+          <div class="install-option" data-platform="windows">
+            <p class="install-label">Windows · PowerShell or Command Prompt</p>
+            <div class="install-command"><pre tabindex="0" aria-label="Windows installation command"><code>winget install --id 9PB6H8Z02K0G --source msstore</code></pre><button type="button" tabindex="0" class="copy-command" hidden>Copy</button></div>
+            <p class="install-note">Installs the signed Store edition. Requires WinGet, internet, and Store access. <a href="https://get.microsoft.com/installer/download/9PB6H8Z02K0G">No WinGet? Download the installer.</a></p>
+          </div>
+          <div class="install-option" data-platform="macos">
+            <p class="install-label">macOS · Terminal</p>
+            <div class="install-command"><pre tabindex="0" aria-label="Mac installation command"><code>brew install --cask gopalasubramanium/plainmark/plainmark@preview</code></pre><button type="button" tabindex="0" class="copy-command" hidden>Copy</button></div>
+            <p class="install-note">Requires <a href="https://brew.sh/">Homebrew</a>. Uses our signed, notarized Mac app. The cask’s “preview” name currently installs v0.4.0. <a href="#download">Or download the Mac app.</a></p>
+          </div>
+          <div class="install-option" data-platform="linux">
+            <p class="install-label">Linux · Download a portable AppImage</p>
+            <div class="install-command"><pre tabindex="0" aria-label="Linux AppImage download command"><code>curl -fLO https://github.com/gopalasubramanium/plainmark/releases/download/v0.4.0/Plainmark_0.4.0_amd64.AppImage &amp;&amp; chmod +x Plainmark_0.4.0_amd64.AppImage</code></pre><button type="button" tabindex="0" class="copy-command" hidden>Copy</button></div>
+            <p class="install-note">For x64 Linux with curl and WebKitGTK 4.1. Saves v0.4.0 in the current folder; open the downloaded file to run. Compatibility depends on your distribution. <a href="#download">See downloads.</a></p>
+          </div>
+          <div class="install-option" data-platform="debian">
+            <p class="install-label">Debian / Ubuntu · Install a .deb package</p>
+            <div class="install-command"><pre tabindex="0" aria-label="Debian and Ubuntu installation command"><code>curl -fLO https://github.com/gopalasubramanium/plainmark/releases/download/v0.4.0/Plainmark_0.4.0_amd64.deb &amp;&amp; sudo apt install ./Plainmark_0.4.0_amd64.deb</code></pre><button type="button" tabindex="0" class="copy-command" hidden>Copy</button></div>
+            <p class="install-note">For x64 Debian / Ubuntu with curl, apt, and WebKitGTK 4.1 available. Downloads v0.4.0 and asks for administrator approval to install it. <a href="#download">Or download the package.</a></p>
+          </div>
+          <p class="install-status" id="install-status" role="status" aria-live="polite"></p>
+        </section>
       </section>
       <figure class="wrap preview">
         <div class="preview-frame"><img src="assets/screenshot.png" width="1440" height="960" fetchpriority="high" alt="Plainmark in visual editing view, with formatted Markdown, task checkboxes, document tabs, and a folder sidebar."></div>
