@@ -4,7 +4,7 @@ Updated 15 September 2026 against the public v0.4.0 baseline and matching Store 
 
 ## Microsoft Store: first priority
 
-Use an **MSIX package** for a Microsoft-hosted edition. Microsoft handles its signing after certification. The EXE/MSI submission route instead requires the publisher to sign the installer and its executable files. SignPath therefore remains useful for direct downloads, while MSIX preparation can proceed without its approval. [Microsoft signing options](https://learn.microsoft.com/en-us/windows/apps/package-and-deploy/code-signing-options).
+Use an **MSIX package** for a Microsoft-hosted edition. Microsoft handles its signing after certification. The EXE/MSI submission route instead requires the publisher to sign the installer and its executable files. SignPath declined Plainmark’s Foundation application on 16 September for insufficient established adoption and visibility. Microsoft Store MSIX signing remains independent of that decision; the primary website download uses Microsoft’s online Store installer. See [the exact delivery record and limits](SIGNING.md#windows). [Microsoft signing options](https://learn.microsoft.com/en-us/windows/apps/package-and-deploy/code-signing-options).
 
 Microsoft's new individual-developer enrollment has no registration fee and requires identity verification. Start at its supported enrollment entry point; do not assume that an Apple account also creates a Microsoft publisher account. [Individual registration](https://learn.microsoft.com/en-us/windows/apps/publish/whats-new-individual-developer).
 

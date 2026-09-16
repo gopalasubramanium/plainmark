@@ -1,6 +1,10 @@
 # SignPath Foundation application record
 
-**Status: submitted on 12 September 2026 with maintainer authorization. The application page confirmed receipt. Awaiting review; no signing subscription, certificate access or sponsorship has been approved.**
+**Status: Foundation application declined on 16 September 2026. The application was submitted on 12 September with maintainer authorization. No signing subscription, certificate access or sponsorship was approved.**
+
+The provider explained that Plainmark does not yet have enough public adoption, independent references and sustained activity for a Foundation certificate. It explicitly distinguished that decision from an assessment of the app’s quality and invited reapplication after broader recognition. This status is based on the provider response shared by the maintainer; the private email is not reproduced here.
+
+Plainmark will use the Microsoft Store web installer as its primary Windows download. Microsoft handles signing of Store MSIX packages at no signing cost. The separate GitHub EXE remains unsigned. No paid subscription was started. See [Windows signing and distribution](SIGNING.md#windows).
 
 Project: Plainmark
 Repository: https://github.com/gopalasubramanium/plainmark
@@ -19,14 +23,14 @@ The application disclosed that Plainmark launched on 11 September 2026 and does 
 
 The maintainer authorized the required code-signing terms and data-processing consent. Optional marketing consent was not selected. The contact address is intentionally omitted from this public record.
 
-## Remaining provider setup
+## If a future application is approved
 
-- Await the Foundation's eligibility decision. A form receipt is not signing approval.
+- Reapply only after the project has established the external adoption and visibility the Foundation requested; record an actual approval before integration.
 - Verify MFA on the repository and new signing account before production use.
 - Configure trusted GitHub build origin and maintainer approval for each production request.
 - Restrict signing to Plainmark's executable and installer, with consistent product and version metadata. NSIS needs signing before packaging for the inner executable and uninstaller, then signing of the outer installer; an outer PE signature alone does not sign its contents. Agree this configuration with the provider rather than assuming recursive NSIS support.
 - Store the provider's actual project, artifact and policy identifiers and encrypted credentials. No Windows signing secret currently exists.
-- Build and sign a new unpublished version, verify the installer and its actual contents with Windows Authenticode, update checksums and attestations, and perform installation checks. Do not replace the published v0.3.3 binaries.
+- Build and sign a new unpublished version, verify the installer and its actual contents with Windows Authenticode, update checksums and attestations, and perform installation checks. Do not replace published binaries or move existing release tags.
 - Add the Foundation's required service/certificate credit only after acceptance; until then the project must not imply sponsorship.
 
 ## Sources

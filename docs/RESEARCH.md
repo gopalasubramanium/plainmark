@@ -172,6 +172,10 @@ Repository private vulnerability reporting and secret push protection were alrea
 
 The next release decision should therefore be based on verified assets and accurately labeled limitations. The strongest product promise is modest and testable: Plainmark is free, local, understandable and careful with files. Eliminating every Markdown pain point would conflict with its small scope; eliminating the common friction in its chosen workflows, and clearly explaining the rest, is an achievable standard.
 
+## Distribution follow-up — 16 September 2026
+
+The signing and release tables above preserve the state of the original research update. Plainmark subsequently established v0.4.0 as its public baseline and published the Microsoft Store edition. SignPath declined the Foundation application on 16 September because the project lacks established external adoption and visibility, and invited reapplication later. The primary Windows download now uses Microsoft’s online Store installer, which delivers the Store MSIX without a separately purchased signing certificate. The unsigned standalone EXE remains an alternative; actual Store-delivered installation and Windows trust validation remain separate coverage gaps. See the maintained [distribution status](DISTRIBUTION-STATUS.md) and [Windows signing record](SIGNING.md#windows).
+
 ## Sources
 
 [^1]: John MacFarlane and contributors. [CommonMark Spec 0.31.2](https://spec.commonmark.org/spec/), 28 January 2024. Syntax ambiguity and standardized parsing behavior.

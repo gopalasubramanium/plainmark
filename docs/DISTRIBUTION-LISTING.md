@@ -54,7 +54,7 @@ Made by Gopala Subramanium and contributors because everyday Markdown should be 
 - The application does not collect or transmit document contents or analytics. External links open the user's browser only when selected. OS webview, store and operating-system services have their own policies.
 - Declare no advertising or in-app purchases. Confirm each platform's privacy questionnaire against the final linked dependencies and edition; do not blindly copy a previous answer.
 - Run HTML executes user-supplied HTML scripts in an isolated frame. Disclose its actual restrictions to Apple review; do not hide the feature.
-- Mac direct downloads are Developer ID signed and notarized. Windows direct downloads remain unsigned while SignPath review is pending. These statements are separate from Store certification.
+- Mac direct downloads are Developer ID signed and notarized. The standalone Windows EXE remains unsigned after SignPath declined the Foundation application; Microsoft handles Store MSIX package signing separately. These statements are separate from Store certification.
 
 ## Platform-specific pending values
 
