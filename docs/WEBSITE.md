@@ -22,6 +22,10 @@ The primary Windows button links directly to [Microsoft’s web installer](https
 
 Preview `website/` with any local static HTTP server. Check the desktop and mobile layout, keyboard focus, in-page links, and installer links before publishing.
 
+## Responsive layout
+
+At widths of 1000px and above, the hero uses two columns: the introduction and unified install area on the left, and the actual app screenshot on the right. The content width grows to 1440px, with smaller heading text and less vertical padding than the stacked layout, so both the app and installation choices appear in the first laptop viewport. The decorative `.md` has been removed. Below 1000px, the existing stacked layout and mobile sizing remain in use. The image retains its original proportions and is neither cropped nor stretched.
+
 ## Unified installation area
 
 The hero contains the only installation area on the page. Download is the default; a compact “Use a command” switch replaces the download actions with a one-line command and Copy button in the same space. Both methods share the same platform selector and preserve its selection. Only the chosen platform and method are visible. Installer alternatives and release notes are collapsed until needed. Mac download mode shows Apple Silicon and Intel choices because browser OS detection cannot reliably identify the chip. `install.js` checks only the browser’s existing user-agent/platform strings and touch capability, locally. No data is sent or stored. It suggests Windows (WinGet), macOS (Homebrew), or an x64 Linux AppImage. Browsers reporting mobile, ChromeOS, ARM Linux, or an unknown OS get a manual choice. This is a convenience hint, not a compatibility check; browsers can obscure or override their OS. A Linux browser cannot reliably identify its distribution, so Debian/Ubuntu installation is always an explicit choice.
