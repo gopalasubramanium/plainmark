@@ -18,7 +18,7 @@
 | [Direct Mac DMG — Apple Silicon](https://github.com/gopalasubramanium/plainmark/releases/download/v0.4.0/Plainmark_0.4.0_aarch64.dmg) / [Intel](https://github.com/gopalasubramanium/plainmark/releases/download/v0.4.0/Plainmark_0.4.0_x64.dmg) | 0.4.0 | Available; signed and notarized; macOS 11+ |
 | [Homebrew for Mac](https://github.com/gopalasubramanium/homebrew-plainmark) | 0.4.0 | Available; uses the same Mac DMGs |
 | [Linux AppImage](https://github.com/gopalasubramanium/plainmark/releases/download/v0.4.0/Plainmark_0.4.0_amd64.AppImage) / [.deb — x64](https://github.com/gopalasubramanium/plainmark/releases/download/v0.4.0/Plainmark_0.4.0_amd64.deb) | 0.4.0 | Available; built on Ubuntu 22.04 |
-| Mac App Store | 0.4.0 submitted | Awaiting review; no public download confirmed |
+| [Mac App Store](https://apps.apple.com/app/plainmark-markdown-editor/id6811364319) | **0.4.0** | Available; Apple-approved; free; macOS 11+ |
 
 The recommended Windows download is Microsoft’s small web installer, which retrieves Plainmark from the Store and uses Store-managed updates. [View the Store listing](https://apps.microsoft.com/detail/9pb6h8z02k0g) if the installer is unsuitable for your device. It is not a fully offline app package.
 
@@ -26,7 +26,7 @@ Windows package details show **0.4.0.0**; this is app version **0.4.0** with an 
 
 Windows uses WebView2, and Linux requires WebKitGTK 4.1. AppImage compatibility depends on the host distribution and its system libraries. See [Tauri’s platform prerequisites](https://v2.tauri.app/start/prerequisites/).
 
-The v0.4.0 Mac apps and DMGs are Developer ID-signed and Apple-notarized. The alternative Windows EXE on GitHub remains unsigned. SignPath declined the Foundation application on 16 September because the project does not yet have sufficient public adoption and visibility. Microsoft Store is the recommended Windows installation route and handles its own package signing without SignPath. Check the [Code signing policy](docs/SIGNING.md) for the exact download. You can also build directly from source below.
+Plainmark **v0.4.0 is now available on the [Mac App Store](https://apps.apple.com/app/plainmark-markdown-editor/id6811364319)**, following Apple approval on 16 September 2026. The direct v0.4.0 Mac apps and DMGs remain Developer ID-signed and Apple-notarized. The alternative Windows EXE on GitHub remains unsigned. SignPath declined the Foundation application on 16 September because the project does not yet have sufficient public adoption and visibility. Microsoft Store is the recommended Windows installation route and handles its own package signing without SignPath. Check the [Code signing policy](docs/SIGNING.md) for the exact download. You can also build directly from source below.
 
 The [website](https://markdown.eksaar.com/) suggests a download for your computer. Switch to “Use a command” in the same install area for a copyable terminal command; you can choose another platform at any time.
 

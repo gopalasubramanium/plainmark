@@ -149,6 +149,9 @@ test('one installation area shows only the chosen method and preserves the selec
   await expect(page.locator('[data-platform="macos"] code')).toBeVisible();
   await page.getByRole('button', { name: 'Download', exact: true }).click();
   await expect(page.getByLabel('Installation platform')).toHaveValue('macos');
+  await expect(page.getByRole('link', { name: 'Download on the Mac App Store' })).toHaveAttribute('href', 'https://apps.apple.com/app/plainmark-markdown-editor/id6811364319');
+  await expect(page.getByRole('link', { name: 'Mac · Apple Silicon' })).toBeHidden();
+  await page.getByText('Other Mac downloads', { exact: true }).click();
   await expect(page.getByRole('link', { name: 'Mac · Apple Silicon' })).toBeVisible();
   await expect(page.getByRole('link', { name: 'Mac · Intel' })).toBeVisible();
   await expect(page.locator('.install-command:visible')).toHaveCount(0);

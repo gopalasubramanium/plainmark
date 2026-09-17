@@ -3,7 +3,7 @@ Plainmark **v0.4.0** is the first public baseline across Windows, macOS and Linu
 ## Download
 
 - **Windows:** [Microsoft Store installer](https://get.microsoft.com/installer/download/9PB6H8Z02K0G) is recommended and requires internet and Store access. The separate x64 EXE remains **unsigned**. SignPath declined the Foundation application on 16 September; Store MSIX signing is handled by Microsoft independently.
-- **macOS:** Choose the Apple Silicon (`aarch64`) or Intel (`x64`) DMG. Both the app and disk image are Developer ID-signed, Apple-notarized and verified by Gatekeeper. The separate Mac App Store submission is version 0.4.0 and is awaiting review.
+- **macOS:** Choose the Apple Silicon (`aarch64`) or Intel (`x64`) DMG. Both the app and disk image are Developer ID-signed, Apple-notarized and verified by Gatekeeper. The separate [Mac App Store edition](https://apps.apple.com/app/plainmark-markdown-editor/id6811364319), also version 0.4.0, was approved on 16 September 2026 and its public listing was verified on 17 September.
 - **Linux:** x64 AppImage and Debian package, built on Ubuntu 22.04. Compatibility depends on system libraries and the distribution.
 - **Homebrew:** Plainmark’s official tap uses these same signed Mac DMGs after its signature, source and installation checks succeed. The `plainmark@preview` cask identifies the early-release channel.
 

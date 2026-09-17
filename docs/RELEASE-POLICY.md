@@ -22,6 +22,6 @@ Coordinating channels adds release work, and stores can approve updates at diffe
 
 ## Initial adoption
 
-The Microsoft Store package is verified as 0.4.0.0 in the live Store presence. Apple has received 0.4.0 for review. Matching v0.4.0 GitHub installers are published, and Homebrew synchronized to the same verified Mac downloads. The website and README recommend the 0.4.0 baseline. Earlier releases, including 0.3.3, remain unchanged in release history. See [distribution evidence](DISTRIBUTION-STATUS.md) for build, signing, installation and synchronization results.
+The Microsoft Store package is verified as 0.4.0.0 in the live Store presence. Apple approved 0.4.0 on 16 September; the [Mac App Store](https://apps.apple.com/app/plainmark-markdown-editor/id6811364319) listing was verified on 17 September. Matching v0.4.0 GitHub installers are published, and Homebrew synchronized to the same verified Mac downloads. The website and README recommend the 0.4.0 baseline. Earlier releases, including 0.3.3, remain unchanged in release history. See [distribution evidence](DISTRIBUTION-STATUS.md) for build, signing, installation and synchronization results.
 
 The Windows Store route remains the recommended Windows installation. A separate direct EXE must continue to disclose its unsigned status until that exact asset has a verified publisher signature. Keep the app free, without ads, tracking, paid features or required app accounts.
